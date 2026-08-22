@@ -17,6 +17,7 @@ fn specta_builder() -> tauri_specta::Builder {
             commands::save_document,
             commands::toggle_pin,
             commands::delete_document,
+            commands::search,
             commands::storage_stats,
             commands::run_retention_now,
         ])

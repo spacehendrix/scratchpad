@@ -77,6 +77,17 @@ async deleteDocument(id: string) : Promise<Result<null, CoreError>> {
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * Async so a full-archive body scan cannot freeze the UI thread.
+ */
+async search(query: string, scopeArchived: boolean) : Promise<Result<SearchHit[], CoreError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("search", { query, scopeArchived }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async storageStats() : Promise<Result<StorageStats, CoreError>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("storage_stats") };
@@ -147,6 +158,15 @@ export type RetentionReport = { archived: number; deletedByAge: number; deletedB
  * Destructive passes were skipped because system time regressed.
  */
 skippedClockSkew: boolean }
+export type SearchHit = { meta: DocMeta; 
+/**
+ * Snippet around the first match (from title/preview or body).
+ */
+snippet: string; 
+/**
+ * True when the match came from the body rather than title/preview.
+ */
+inBody: boolean }
 export type StorageStats = { dbBytes: number; limitBytes: number; docCount: number; archivedCount: number; pinnedCount: number; 
 /**
  * True when over the limit but only pinned documents remain — saves are

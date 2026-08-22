@@ -2,6 +2,7 @@
   import Unlock from "./lib/components/Unlock.svelte";
   import Browse from "./lib/components/Browse.svelte";
   import Editor from "./lib/components/Editor.svelte";
+  import Search from "./lib/components/Search.svelte";
   import { session } from "./lib/stores/session.svelte";
 </script>
 
@@ -9,6 +10,8 @@
   <Unlock onunlocked={() => (session.locked = false)} />
 {:else if session.view === "editor"}
   <Editor />
+{:else if session.view === "search"}
+  <Search />
 {:else}
   <Browse />
 {/if}

@@ -7,9 +7,11 @@ import {
   type DocMeta,
   type Document,
   type Result,
+  type SearchHit,
+  type StorageStats,
 } from "./bindings";
 
-export type { CoreError, DocMeta, Document };
+export type { CoreError, DocMeta, Document, SearchHit, StorageStats };
 
 /** Unwrap a specta Result, throwing the typed CoreError on failure. */
 async function unwrap<T>(p: Promise<Result<T, CoreError>>): Promise<T> {
@@ -39,3 +41,7 @@ export const saveDocument = (
 ): Promise<DocMeta> => unwrap(commands.saveDocument(id, title, body));
 export const togglePin = (id: string): Promise<DocMeta> => unwrap(commands.togglePin(id));
 export const deleteDocument = (id: string): Promise<null> => unwrap(commands.deleteDocument(id));
+
+export const search = (query: string, scopeArchived: boolean): Promise<SearchHit[]> =>
+  unwrap(commands.search(query, scopeArchived));
+export const storageStats = (): Promise<StorageStats> => unwrap(commands.storageStats());

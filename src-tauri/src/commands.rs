@@ -7,7 +7,7 @@ use tauri::{AppHandle, Manager, State};
 use crate::core::clock::{Clock, SystemClock};
 use crate::core::error::{CoreError, CoreResult};
 use crate::core::keychain::KeychainKeySource;
-use crate::core::model::{DocMeta, Document, RetentionReport, StorageStats};
+use crate::core::model::{DocMeta, Document, RetentionReport, SearchHit, StorageStats};
 use crate::core::state::AppState;
 
 type Shared<'a> = State<'a, Mutex<AppState>>;
@@ -108,6 +108,21 @@ pub fn delete_document(state: Shared<'_>, id: String) -> Result<(), CoreError> {
         .expect("state poisoned")
         .session_mut()?
         .delete(&id)
+}
+
+/// Async so a full-archive body scan cannot freeze the UI thread.
+#[tauri::command]
+#[specta::specta]
+pub async fn search(
+    state: Shared<'_>,
+    query: String,
+    scope_archived: bool,
+) -> Result<Vec<SearchHit>, CoreError> {
+    crate::core::search::search(
+        state.lock().expect("state poisoned").session()?,
+        &query,
+        scope_archived,
+    )
 }
 
 #[tauri::command]

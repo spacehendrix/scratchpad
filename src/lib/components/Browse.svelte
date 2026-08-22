@@ -27,6 +27,8 @@
 
   const keymap: Keymap = {
     n: () => open(null),
+    "/": () => (session.view = "search"),
+    "cmd+k": () => (session.view = "search"),
     j: () => {
       selectedIndex = Math.min(selectedIndex + 1, documents.catalog.length - 1);
     },
@@ -67,7 +69,7 @@
       {/each}
     </div>
   {/if}
-  <p class="hints">[n] new · [⏎] open · [j/k] move · [p] pin</p>
+  <p class="hints">[n] new · [⏎] open · [j/k] move · [p] pin · [/] search</p>
 </div>
 
 <style>
