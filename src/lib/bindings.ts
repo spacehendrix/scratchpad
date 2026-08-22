@@ -7,6 +7,35 @@
 export const commands = {
 async isUnlocked() : Promise<boolean> {
     return await TAURI_INVOKE("is_unlocked");
+},
+/**
+ * Async so the (possibly seconds-long) Touch ID sheet never blocks the main
+ * thread. First run generates the key silently; later runs prompt.
+ */
+async unlock() : Promise<Result<null, CoreError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("unlock") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async lock() : Promise<void> {
+    await TAURI_INVOKE("lock");
+},
+/**
+ * Recovery path when the stored data can no longer be decrypted (the
+ * keychain item was deleted/regenerated). Quarantines the old database
+ * (rename, never delete) and unlocks against a fresh one. The UI gates this
+ * behind an explicit typed confirmation.
+ */
+async startFresh() : Promise<Result<null, CoreError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("start_fresh") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -20,7 +49,11 @@ async isUnlocked() : Promise<boolean> {
 
 /** user-defined types **/
 
-
+/**
+ * Single error surface crossing IPC, serialized as a tagged union so the
+ * frontend can react to specific kinds (e.g. `locked` → show unlock screen).
+ */
+export type CoreError = { kind: "locked" } | { kind: "keychainDenied" } | { kind: "keychainItemMissing" } | { kind: "storageFull" } | { kind: "notFound" } | { kind: "io"; detail: string } | { kind: "corrupt"; detail: { id: string } }
 
 /** tauri-specta globals **/
 

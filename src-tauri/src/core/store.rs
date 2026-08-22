@@ -185,6 +185,19 @@ fn sql_err(e: rusqlite::Error) -> CoreError {
     CoreError::Io(e.to_string())
 }
 
+/// Move an undecryptable database aside instead of deleting it ("start
+/// fresh" flow after the keychain key was lost). Reversible by hand.
+pub fn quarantine_db(data_dir: &Path, suffix: &str) -> CoreResult<()> {
+    for ext in ["", "-wal", "-shm"] {
+        let src = data_dir.join(format!("{DB_FILE}{ext}"));
+        if src.exists() {
+            let dst = data_dir.join(format!("{DB_FILE}.corrupt-{suffix}{ext}"));
+            std::fs::rename(&src, &dst)?;
+        }
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

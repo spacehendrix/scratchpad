@@ -1,24 +1,15 @@
 <script lang="ts">
-  import { isUnlocked } from "./lib/api";
-
-  let locked = $state<boolean | undefined>(undefined);
-
-  $effect(() => {
-    isUnlocked().then((v) => (locked = !v));
-  });
+  import Unlock from "./lib/components/Unlock.svelte";
+  import { session } from "./lib/stores/session.svelte";
 </script>
 
-<main class="shell">
-  <p>
-    scratchpad
-    {#if locked === undefined}
-      · …
-    {:else}
-      · {locked ? "locked" : "unlocked"}
-    {/if}
-    <span class="cursor">▊</span>
-  </p>
-</main>
+{#if session.locked}
+  <Unlock onunlocked={() => (session.locked = false)} />
+{:else}
+  <main class="shell">
+    <p>unlocked · ready<span class="cursor">▊</span></p>
+  </main>
+{/if}
 
 <style>
   .shell {

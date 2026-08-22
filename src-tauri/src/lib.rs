@@ -7,7 +7,12 @@ use crate::core::state::AppState;
 
 fn specta_builder() -> tauri_specta::Builder {
     tauri_specta::Builder::<tauri::Wry>::new()
-        .commands(tauri_specta::collect_commands![commands::is_unlocked])
+        .commands(tauri_specta::collect_commands![
+            commands::is_unlocked,
+            commands::unlock,
+            commands::lock,
+            commands::start_fresh,
+        ])
 }
 
 pub fn run() {
