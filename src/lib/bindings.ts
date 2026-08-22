@@ -36,6 +36,46 @@ async startFresh() : Promise<Result<null, CoreError>> {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+async listDocuments() : Promise<Result<DocMeta[], CoreError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("list_documents") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async getDocument(id: string) : Promise<Result<Document, CoreError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_document", { id }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async saveDocument(id: string | null, title: string | null, body: string) : Promise<Result<DocMeta, CoreError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("save_document", { id, title, body }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async togglePin(id: string) : Promise<Result<DocMeta, CoreError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("toggle_pin", { id }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async deleteDocument(id: string) : Promise<Result<null, CoreError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("delete_document", { id }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -50,10 +90,42 @@ async startFresh() : Promise<Result<null, CoreError>> {
 /** user-defined types **/
 
 /**
+ * Checklist progress derived from the body at save time, so list rendering
+ * never needs to decrypt bodies.
+ */
+export type ChecklistCounts = { done: number; total: number }
+/**
  * Single error surface crossing IPC, serialized as a tagged union so the
  * frontend can react to specific kinds (e.g. `locked` → show unlock screen).
  */
 export type CoreError = { kind: "locked" } | { kind: "keychainDenied" } | { kind: "keychainItemMissing" } | { kind: "storageFull" } | { kind: "notFound" } | { kind: "io"; detail: string } | { kind: "corrupt"; detail: { id: string } }
+/**
+ * Listing/browse metadata — everything the UI needs without the body.
+ * Stored encrypted as its own blob, decrypted into the in-memory catalog
+ * on unlock.
+ */
+export type DocMeta = { id: string; title: string | null; 
+/**
+ * First non-empty line of the body, truncated; display name fallback.
+ */
+preview: string; createdAt: number; 
+/**
+ * Last content edit (edits and checkbox toggles only — opening a
+ * document does NOT refresh this). Drives the whole retention policy.
+ */
+updatedAt: number; pinned: boolean; archivedAt: number | null; 
+/**
+ * Size of the plaintext body in bytes.
+ */
+sizeBytes: number; checklist: ChecklistCounts | null }
+/**
+ * A full document as the editor sees it.
+ */
+export type Document = { 
+/**
+ * UUIDv7 (time-ordered).
+ */
+id: string; title: string | null; body: string; meta: DocMeta }
 
 /** tauri-specta globals **/
 

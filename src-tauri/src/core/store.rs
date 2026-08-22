@@ -75,6 +75,24 @@ impl Store {
         tx.commit().map_err(sql_err)
     }
 
+    /// Update only the metadata blob (pin toggles, archival) without
+    /// re-encrypting the body.
+    pub fn update_meta(&mut self, key: &MasterKey, meta: &DocMeta) -> CoreResult<()> {
+        let meta_json = serde_json::to_vec(meta).map_err(|e| CoreError::Io(e.to_string()))?;
+        let meta_blob = seal(key, &aad(&meta.id, "meta"), &meta_json);
+        let n = self
+            .conn
+            .execute(
+                "UPDATE documents SET meta_blob = ?2 WHERE id = ?1",
+                params![meta.id, meta_blob],
+            )
+            .map_err(sql_err)?;
+        if n == 0 {
+            return Err(CoreError::NotFound);
+        }
+        Ok(())
+    }
+
     /// Decrypt every document's metadata into the in-memory catalog.
     pub fn load_catalog(&self, key: &MasterKey) -> CoreResult<Vec<DocMeta>> {
         let mut stmt = self

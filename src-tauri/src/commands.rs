@@ -4,8 +4,10 @@ use std::sync::Mutex;
 
 use tauri::{AppHandle, Manager, State};
 
+use crate::core::clock::{Clock, SystemClock};
 use crate::core::error::{CoreError, CoreResult};
 use crate::core::keychain::KeychainKeySource;
+use crate::core::model::{DocMeta, Document};
 use crate::core::state::AppState;
 
 type Shared<'a> = State<'a, Mutex<AppState>>;
@@ -42,6 +44,54 @@ pub async fn unlock(app: AppHandle, state: Shared<'_>) -> Result<(), CoreError> 
 #[specta::specta]
 pub fn lock(state: Shared<'_>) {
     state.lock().expect("state poisoned").lock();
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn list_documents(state: Shared<'_>) -> Result<Vec<DocMeta>, CoreError> {
+    Ok(state.lock().expect("state poisoned").session()?.list())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn get_document(state: Shared<'_>, id: String) -> Result<Document, CoreError> {
+    state.lock().expect("state poisoned").session()?.get(&id)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn save_document(
+    state: Shared<'_>,
+    id: Option<String>,
+    title: Option<String>,
+    body: String,
+) -> Result<DocMeta, CoreError> {
+    let now = SystemClock.now_ms();
+    state
+        .lock()
+        .expect("state poisoned")
+        .session_mut()?
+        .save(id, title, body, now)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn toggle_pin(state: Shared<'_>, id: String) -> Result<DocMeta, CoreError> {
+    state
+        .lock()
+        .expect("state poisoned")
+        .session_mut()?
+        .toggle_pin(&id)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn delete_document(state: Shared<'_>, id: String) -> Result<(), CoreError> {
+    state
+        .lock()
+        .expect("state poisoned")
+        .session_mut()?
+        .delete(&id)
 }
 
 /// Recovery path when the stored data can no longer be decrypted (the

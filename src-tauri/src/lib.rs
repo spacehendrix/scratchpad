@@ -12,6 +12,11 @@ fn specta_builder() -> tauri_specta::Builder {
             commands::unlock,
             commands::lock,
             commands::start_fresh,
+            commands::list_documents,
+            commands::get_document,
+            commands::save_document,
+            commands::toggle_pin,
+            commands::delete_document,
         ])
 }
 
