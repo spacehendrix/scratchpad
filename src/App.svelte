@@ -7,6 +7,12 @@
   import Rule from "./lib/components/Rule.svelte";
   import StatusBar from "./lib/components/StatusBar.svelte";
   import { session } from "./lib/stores/session.svelte";
+  import { dispatch } from "./lib/keyboard";
+
+  function onkeydown(e: KeyboardEvent) {
+    if (session.locked) return;
+    dispatch({ "!cmd+l": () => session.lockNow() }, e);
+  }
 
   const LABELS: Record<string, string> = {
     browse: "scratchpad",
@@ -15,6 +21,8 @@
     settings: "theme",
   };
 </script>
+
+<svelte:window {onkeydown} />
 
 {#if session.locked}
   <Unlock onunlocked={() => (session.locked = false)} />

@@ -1,13 +1,15 @@
 <script lang="ts">
   import { documents } from "../stores/documents.svelte";
   import { session } from "../stores/session.svelte";
-  import { togglePin } from "../api";
+  import { deleteDocument, togglePin } from "../api";
   import { dispatch, type Keymap } from "../keyboard";
   import DocRow from "./DocRow.svelte";
   import Cursor from "./Cursor.svelte";
 
   let selectedIndex = $state(0);
   let now = $state(Date.now());
+  /** Id awaiting delete confirmation ([y] confirms, anything else cancels). */
+  let confirmingDelete = $state<string | null>(null);
 
   $effect(() => {
     documents.refresh();
@@ -51,9 +53,24 @@
       await documents.refresh();
       selectedIndex = Math.max(0, documents.catalog.findIndex((m) => m.id === id));
     },
+    d: () => {
+      const meta = documents.catalog[selectedIndex];
+      if (meta) confirmingDelete = meta.id;
+    },
   };
 
   function onkeydown(e: KeyboardEvent) {
+    if (confirmingDelete !== null) {
+      e.preventDefault();
+      const id = confirmingDelete;
+      confirmingDelete = null;
+      if (e.key === "y") {
+        deleteDocument(id)
+          .then(() => documents.refresh())
+          .then(clamp);
+      }
+      return;
+    }
     dispatch(keymap, e);
     clamp();
   }
@@ -67,7 +84,13 @@
   {:else}
     <div class="list">
       {#each documents.catalog as meta, i (meta.id)}
-        <DocRow {meta} {now} selected={i === selectedIndex} onopen={() => open(meta.id)} />
+        <DocRow
+          {meta}
+          {now}
+          selected={i === selectedIndex}
+          confirmingDelete={confirmingDelete === meta.id}
+          onopen={() => open(meta.id)}
+        />
       {/each}
     </div>
   {/if}

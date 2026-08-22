@@ -32,6 +32,14 @@ pub fn run() {
     export_bindings(&builder);
 
     tauri::Builder::default()
+        // A second launch focuses the existing window instead of racing on
+        // the database.
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            use tauri::Manager;
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.set_focus();
+            }
+        }))
         .manage(Mutex::new(AppState::default()))
         .invoke_handler(builder.invoke_handler())
         .setup(|app| {

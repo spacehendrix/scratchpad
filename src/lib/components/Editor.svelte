@@ -34,6 +34,14 @@
     if (loaded) bodyEl?.focus();
   });
 
+  // Cmd+L must not lose the in-flight edit: register the flush.
+  $effect(() => {
+    session.beforeLock = () => flush();
+    return () => {
+      session.beforeLock = null;
+    };
+  });
+
   function markDirty() {
     dirty = true;
     clearTimeout(saveTimer);

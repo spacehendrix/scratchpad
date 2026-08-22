@@ -6,11 +6,13 @@
     meta,
     selected,
     now,
+    confirmingDelete = false,
     onopen,
   }: {
     meta: DocMeta;
     selected: boolean;
     now: number;
+    confirmingDelete?: boolean;
     onopen: () => void;
   } = $props();
 </script>
@@ -23,7 +25,11 @@
   {#if meta.checklist}
     <span class="badge">[{meta.checklist.done}/{meta.checklist.total}]</span>
   {/if}
-  <span class="age">{relativeAge(meta.updatedAt, now)}</span>
+  {#if confirmingDelete}
+    <span class="confirm">delete? [y]</span>
+  {:else}
+    <span class="age">{relativeAge(meta.updatedAt, now)}</span>
+  {/if}
 </div>
 
 <style>
@@ -61,5 +67,8 @@
     opacity: 0.45;
     min-width: 3ch;
     text-align: right;
+  }
+  .confirm {
+    color: var(--err);
   }
 </style>
