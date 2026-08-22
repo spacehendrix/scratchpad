@@ -1,5 +1,23 @@
+<script lang="ts">
+  import { isUnlocked } from "./lib/api";
+
+  let locked = $state<boolean | undefined>(undefined);
+
+  $effect(() => {
+    isUnlocked().then((v) => (locked = !v));
+  });
+</script>
+
 <main class="shell">
-  <p>scratchpad<span class="cursor">▊</span></p>
+  <p>
+    scratchpad
+    {#if locked === undefined}
+      · …
+    {:else}
+      · {locked ? "locked" : "unlocked"}
+    {/if}
+    <span class="cursor">▊</span>
+  </p>
 </main>
 
 <style>
