@@ -1,7 +1,21 @@
-/* Base reset + terminal ground. Theme variables land here in a later milestone. */
+/* Base reset + terminal ground.
+   Theme contract: every theme redefines exactly these tokens via
+   :root[data-theme="…"] in src/themes/<id>.css. The bare :root below IS
+   tokyo-night, so the very first paint (before settings load) is themed. */
 :root {
-  --bg: #16161e;
+  --bg: #1a1b26;
+  --bg-alt: #16161e;
   --fg: #c0caf5;
+  --fg-dim: #565f89;
+  --accent: #7aa2f7;
+  --accent2: #bb9af7;
+  --ok: #9ece6a;
+  --warn: #e0af68;
+  --err: #f7768e;
+  --border: #292e42;
+  --sel-bg: #283457;
+  --cursor: #c0caf5;
+
   font-family: "SF Mono", "Menlo", "JetBrains Mono", monospace;
   font-size: 16px; /* root font-size: the one allowed px value that rem scales from */
   color: var(--fg);
@@ -22,4 +36,10 @@ body {
   overflow: hidden;
   user-select: none;
   cursor: default;
+  background-color: var(--bg);
+  color: var(--fg);
+}
+
+::selection {
+  background: var(--sel-bg);
 }

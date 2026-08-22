@@ -1,0 +1,14 @@
+:root[data-theme="rose-pine"] {
+  --bg: #191724;
+  --bg-alt: #1f1d2e;
+  --fg: #e0def4;
+  --fg-dim: #6e6a86;
+  --accent: #ebbcba;
+  --accent2: #c4a7e7;
+  --ok: #9ccfd8;
+  --warn: #f6c177;
+  --err: #eb6f92;
+  --border: #26233a;
+  --sel-bg: #2a283e;
+  --cursor: #e0def4;
+}

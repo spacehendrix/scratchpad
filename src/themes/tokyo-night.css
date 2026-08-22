@@ -1,0 +1,14 @@
+:root[data-theme="tokyo-night"] {
+  --bg: #1a1b26;
+  --bg-alt: #16161e;
+  --fg: #c0caf5;
+  --fg-dim: #565f89;
+  --accent: #7aa2f7;
+  --accent2: #bb9af7;
+  --ok: #9ece6a;
+  --warn: #e0af68;
+  --err: #f7768e;
+  --border: #292e42;
+  --sel-bg: #283457;
+  --cursor: #c0caf5;
+}

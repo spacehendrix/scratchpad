@@ -103,6 +103,25 @@ async runRetentionNow() : Promise<Result<RetentionReport, CoreError>> {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+/**
+ * Settings are readable before unlock (the unlock screen is themed).
+ */
+async getSettings() : Promise<Result<Settings, CoreError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_settings") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async setSettings(settings: Settings) : Promise<Result<null, CoreError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("set_settings", { settings }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -167,6 +186,7 @@ snippet: string;
  * True when the match came from the body rather than title/preview.
  */
 inBody: boolean }
+export type Settings = { theme: string }
 export type StorageStats = { dbBytes: number; limitBytes: number; docCount: number; archivedCount: number; pinnedCount: number; 
 /**
  * True when over the limit but only pinned documents remain — saves are

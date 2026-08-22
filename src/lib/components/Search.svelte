@@ -119,7 +119,7 @@
     display: flex;
     align-items: baseline;
     gap: 0.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    border-bottom: 1px solid var(--border);
     padding-bottom: 0.4rem;
     margin-bottom: 0.6rem;
   }
@@ -160,7 +160,7 @@
     white-space: nowrap;
   }
   .hit.selected {
-    background: var(--sel-bg, rgba(255, 255, 255, 0.08));
+    background: var(--sel-bg);
   }
   .marker {
     width: 1ch;

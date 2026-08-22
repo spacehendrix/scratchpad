@@ -1,0 +1,14 @@
+:root[data-theme="catppuccin"] {
+  --bg: #1e1e2e;
+  --bg-alt: #181825;
+  --fg: #cdd6f4;
+  --fg-dim: #6c7086;
+  --accent: #89b4fa;
+  --accent2: #cba6f7;
+  --ok: #a6e3a1;
+  --warn: #f9e2af;
+  --err: #f38ba8;
+  --border: #313244;
+  --sel-bg: #45475a;
+  --cursor: #f5e0dc;
+}

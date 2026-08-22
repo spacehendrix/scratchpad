@@ -143,7 +143,7 @@
   .title {
     background: transparent;
     border: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    border-bottom: 1px solid var(--border);
     color: var(--fg);
     font: inherit;
     padding: 0.25rem 0;

@@ -7,7 +7,7 @@ use tauri::{AppHandle, Manager, State};
 use crate::core::clock::{Clock, SystemClock};
 use crate::core::error::{CoreError, CoreResult};
 use crate::core::keychain::KeychainKeySource;
-use crate::core::model::{DocMeta, Document, RetentionReport, SearchHit, StorageStats};
+use crate::core::model::{DocMeta, Document, RetentionReport, SearchHit, Settings, StorageStats};
 use crate::core::state::AppState;
 
 type Shared<'a> = State<'a, Mutex<AppState>>;
@@ -136,6 +136,19 @@ pub fn storage_stats(state: Shared<'_>) -> Result<StorageStats, CoreError> {
 pub fn run_retention_now(state: Shared<'_>) -> Result<RetentionReport, CoreError> {
     let now = SystemClock.now_ms();
     crate::core::retention::run(state.lock().expect("state poisoned").session_mut()?, now)
+}
+
+/// Settings are readable before unlock (the unlock screen is themed).
+#[tauri::command]
+#[specta::specta]
+pub fn get_settings(app: AppHandle) -> Result<Settings, CoreError> {
+    Ok(crate::core::settings::load(&data_dir(&app)?))
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn set_settings(app: AppHandle, settings: Settings) -> Result<(), CoreError> {
+    crate::core::settings::save(&data_dir(&app)?, &settings)
 }
 
 /// Recovery path when the stored data can no longer be decrypted (the

@@ -1,0 +1,14 @@
+:root[data-theme="everforest"] {
+  --bg: #2d353b;
+  --bg-alt: #232a2e;
+  --fg: #d3c6aa;
+  --fg-dim: #859289;
+  --accent: #a7c080;
+  --accent2: #7fbbb3;
+  --ok: #a7c080;
+  --warn: #dbbc7f;
+  --err: #e67e80;
+  --border: #3d484d;
+  --sel-bg: #475258;
+  --cursor: #d3c6aa;
+}

@@ -20,6 +20,8 @@ fn specta_builder() -> tauri_specta::Builder {
             commands::search,
             commands::storage_stats,
             commands::run_retention_now,
+            commands::get_settings,
+            commands::set_settings,
         ])
 }
 

@@ -3,6 +3,7 @@
   import Browse from "./lib/components/Browse.svelte";
   import Editor from "./lib/components/Editor.svelte";
   import Search from "./lib/components/Search.svelte";
+  import Settings from "./lib/components/Settings.svelte";
   import { session } from "./lib/stores/session.svelte";
 </script>
 
@@ -12,6 +13,8 @@
   <Editor />
 {:else if session.view === "search"}
   <Search />
+{:else if session.view === "settings"}
+  <Settings />
 {:else}
   <Browse />
 {/if}

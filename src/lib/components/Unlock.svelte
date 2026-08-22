@@ -112,15 +112,15 @@
     opacity: 0.55;
   }
   .warn {
-    color: #e0af68;
+    color: var(--warn);
   }
   .err {
-    color: #f7768e;
+    color: var(--err);
   }
   input {
     background: transparent;
     border: none;
-    border-bottom: 1px solid var(--fg);
+    border-bottom: 0.0625rem solid var(--fg);
     color: var(--fg);
     font: inherit;
     width: 6ch;

@@ -1,0 +1,14 @@
+:root[data-theme="matte-black"] {
+  --bg: #121212;
+  --bg-alt: #0a0a0a;
+  --fg: #d6d6d6;
+  --fg-dim: #666666;
+  --accent: #ffffff;
+  --accent2: #a3a3a3;
+  --ok: #8bd450;
+  --warn: #e5c07b;
+  --err: #e06c75;
+  --border: #2a2a2a;
+  --sel-bg: #262626;
+  --cursor: #ffffff;
+}

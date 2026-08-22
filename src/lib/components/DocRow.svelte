@@ -35,7 +35,7 @@
     white-space: nowrap;
   }
   .row.selected {
-    background: var(--sel-bg, rgba(255, 255, 255, 0.08));
+    background: var(--sel-bg);
   }
   .marker {
     width: 1ch;

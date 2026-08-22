@@ -29,6 +29,7 @@
     n: () => open(null),
     "/": () => (session.view = "search"),
     "cmd+k": () => (session.view = "search"),
+    ",": () => (session.view = "settings"),
     j: () => {
       selectedIndex = Math.min(selectedIndex + 1, documents.catalog.length - 1);
     },
@@ -69,7 +70,7 @@
       {/each}
     </div>
   {/if}
-  <p class="hints">[n] new · [⏎] open · [j/k] move · [p] pin · [/] search</p>
+  <p class="hints">[n] new · [⏎] open · [j/k] move · [p] pin · [/] search · [,] theme</p>
 </div>
 
 <style>
