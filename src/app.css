@@ -1,0 +1,25 @@
+/* Base reset + terminal ground. Theme variables land here in a later milestone. */
+:root {
+  --bg: #16161e;
+  --fg: #c0caf5;
+  font-family: "SF Mono", "Menlo", "JetBrains Mono", monospace;
+  font-size: 16px; /* root font-size: the one allowed px value that rem scales from */
+  color: var(--fg);
+  background-color: var(--bg);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  user-select: none;
+  cursor: default;
+}
