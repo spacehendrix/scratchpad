@@ -20,11 +20,21 @@ impl KeySource for InMemoryKeySource {
     }
 }
 
-/// macOS keychain source. The key lives as a generic-password item in the
-/// Data Protection keychain with `kSecAccessControlUserPresence`: reading it
-/// makes the OS show the Touch ID sheet (with the account-password fallback),
-/// and because the item is a random key — not derived from the login
-/// password — it survives macOS password changes.
+/// macOS keychain source.
+///
+/// The master key lives as a generic-password item in the user's login
+/// keychain, and every read is gated behind an explicit LocalAuthentication
+/// user-presence check (`LAPolicy::DeviceOwnerAuthentication` — Touch ID
+/// with the account-password fallback, the same system sheet the Data
+/// Protection keychain would show). Because the key is random — not derived
+/// from the login password — it survives macOS password changes.
+///
+/// Why not the Data Protection keychain with `kSecAccessControlUserPresence`?
+/// It refuses items from binaries without a proper signing entitlement
+/// (OSStatus -34018), and this app is local-build only (ad-hoc signed). A
+/// try-DP-first strategy was rejected deliberately: two possible key
+/// locations would let a differently-signed future build silently mint a
+/// second key and orphan the database. One location, one key.
 #[cfg(target_os = "macos")]
 pub struct KeychainKeySource {
     service: String,
@@ -41,13 +51,39 @@ impl KeychainKeySource {
     }
 }
 
+/// Block until the user passes the system Touch ID / password sheet.
+#[cfg(target_os = "macos")]
+fn authenticate_user_presence() -> CoreResult<()> {
+    use crate::core::error::CoreError;
+    use block2::RcBlock;
+    use objc2::runtime::Bool;
+    use objc2_foundation::{NSError, NSString};
+    use objc2_local_authentication::{LAContext, LAPolicy};
+    use std::sync::mpsc;
+
+    let (tx, rx) = mpsc::channel::<bool>();
+    let reply = RcBlock::new(move |success: Bool, _error: *mut NSError| {
+        let _ = tx.send(success.as_bool());
+    });
+    unsafe {
+        let ctx = LAContext::new();
+        ctx.evaluatePolicy_localizedReason_reply(
+            LAPolicy::DeviceOwnerAuthentication,
+            &NSString::from_str("unlock your scratchpad"),
+            &reply,
+        );
+    }
+    match rx.recv() {
+        Ok(true) => Ok(()),
+        _ => Err(CoreError::KeychainDenied),
+    }
+}
+
 #[cfg(target_os = "macos")]
 impl KeySource for KeychainKeySource {
     fn load_or_create(&self) -> CoreResult<MasterKey> {
         use crate::core::error::CoreError;
-        use security_framework::base::Error as SecError;
-        use security_framework::passwords::{get_generic_password, set_generic_password_options};
-        use security_framework::passwords_options::{AccessControlOptions, PasswordOptions};
+        use security_framework::passwords::{get_generic_password, set_generic_password};
 
         // OSStatus codes (Security/SecBase.h).
         const ERR_SEC_ITEM_NOT_FOUND: i32 = -25300;
@@ -55,30 +91,34 @@ impl KeySource for KeychainKeySource {
         const ERR_SEC_AUTH_FAILED: i32 = -25293;
         const ERR_SEC_INTERACTION_NOT_ALLOWED: i32 = -25308;
 
-        let map_err = |e: SecError| match e.code() {
-            ERR_SEC_USER_CANCELED | ERR_SEC_AUTH_FAILED | ERR_SEC_INTERACTION_NOT_ALLOWED => {
-                CoreError::KeychainDenied
-            }
-            _ => CoreError::Io(format!("keychain error {}", e.code())),
-        };
-
         match get_generic_password(&self.service, &self.account) {
             Ok(bytes) => {
                 let bytes: [u8; KEY_LEN] = bytes
                     .as_slice()
                     .try_into()
                     .map_err(|_| CoreError::KeychainItemMissing)?;
+                // The item exists: require user presence before handing the
+                // key to the session.
+                authenticate_user_presence()?;
                 Ok(MasterKey::from_bytes(bytes))
             }
+            // First run: create the key silently (there is nothing to
+            // protect yet); every later unlock prompts.
             Err(e) if e.code() == ERR_SEC_ITEM_NOT_FOUND => {
                 let key = MasterKey::generate();
-                let mut options =
-                    PasswordOptions::new_generic_password(&self.service, &self.account);
-                options.set_access_control_options(AccessControlOptions::USER_PRESENCE);
-                set_generic_password_options(key.as_bytes(), options).map_err(map_err)?;
+                set_generic_password(&self.service, &self.account, key.as_bytes())
+                    .map_err(|e| CoreError::Io(format!("keychain error {}", e.code())))?;
                 Ok(key)
             }
-            Err(e) => Err(map_err(e)),
+            Err(e)
+                if matches!(
+                    e.code(),
+                    ERR_SEC_USER_CANCELED | ERR_SEC_AUTH_FAILED | ERR_SEC_INTERACTION_NOT_ALLOWED
+                ) =>
+            {
+                Err(CoreError::KeychainDenied)
+            }
+            Err(e) => Err(CoreError::Io(format!("keychain error {}", e.code()))),
         }
     }
 }
