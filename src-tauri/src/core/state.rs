@@ -116,10 +116,39 @@ impl Session {
     ) -> CoreResult<DocMeta> {
         use crate::core::model::{derive_checklist, derive_preview};
 
+        // Over-capacity with only pinned docs left: refuse growth, allow
+        // shrinking edits so the user can dig themselves out.
+        if self.over_capacity() {
+            let grows = match &id {
+                None => true,
+                Some(id) => self
+                    .catalog
+                    .iter()
+                    .find(|m| &m.id == id)
+                    .is_none_or(|m| body.len() as u32 > m.size_bytes),
+            };
+            if grows {
+                return Err(CoreError::StorageFull);
+            }
+        }
+
         let title = title.filter(|t| !t.trim().is_empty());
         let meta = match id {
             None => DocMeta {
                 id: uuid::Uuid::now_v7().to_string(),
+                title,
+                preview: derive_preview(&body),
+                created_at: now,
+                updated_at: now,
+                pinned: false,
+                archived_at: None,
+                size_bytes: body.len() as u32,
+                checklist: derive_checklist(&body),
+            },
+            // A doc deleted underneath an open editor (background retention)
+            // silently becomes a create-with-id, so no edit is ever lost.
+            Some(id) if !self.catalog.iter().any(|m| m.id == id) => DocMeta {
+                id,
                 title,
                 preview: derive_preview(&body),
                 created_at: now,
@@ -134,7 +163,7 @@ impl Session {
                     .catalog
                     .iter()
                     .find(|m| m.id == id)
-                    .ok_or(CoreError::NotFound)?;
+                    .expect("checked above");
                 DocMeta {
                     id: existing.id.clone(),
                     title,
@@ -172,6 +201,23 @@ impl Session {
         self.store.delete(id)?;
         self.catalog.retain(|m| m.id != id);
         Ok(())
+    }
+
+    /// True when past the storage cap with nothing left to evict.
+    pub fn over_capacity(&self) -> bool {
+        self.store.db_size_bytes() > crate::core::retention::STORAGE_LIMIT_BYTES
+            && self.catalog.iter().all(|m| m.pinned)
+    }
+
+    pub fn stats(&self) -> crate::core::model::StorageStats {
+        crate::core::model::StorageStats {
+            db_bytes: self.store.db_size_bytes(),
+            limit_bytes: crate::core::retention::STORAGE_LIMIT_BYTES,
+            doc_count: self.catalog.len() as u32,
+            archived_count: self.catalog.iter().filter(|m| m.archived_at.is_some()).count() as u32,
+            pinned_count: self.catalog.iter().filter(|m| m.pinned).count() as u32,
+            over_capacity: self.over_capacity(),
+        }
     }
 
     fn put_catalog(&mut self, meta: DocMeta) {

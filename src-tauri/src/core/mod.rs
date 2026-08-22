@@ -5,5 +5,6 @@ pub mod crypto;
 pub mod error;
 pub mod keychain;
 pub mod model;
+pub mod retention;
 pub mod state;
 pub mod store;

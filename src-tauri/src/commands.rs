@@ -7,7 +7,7 @@ use tauri::{AppHandle, Manager, State};
 use crate::core::clock::{Clock, SystemClock};
 use crate::core::error::{CoreError, CoreResult};
 use crate::core::keychain::KeychainKeySource;
-use crate::core::model::{DocMeta, Document};
+use crate::core::model::{DocMeta, Document, RetentionReport, StorageStats};
 use crate::core::state::AppState;
 
 type Shared<'a> = State<'a, Mutex<AppState>>;
@@ -31,11 +31,27 @@ pub fn is_unlocked(state: Shared<'_>) -> bool {
 pub async fn unlock(app: AppHandle, state: Shared<'_>) -> Result<(), CoreError> {
     let dir = data_dir(&app)?;
     let source = KeychainKeySource::new();
-    let result = state.lock().expect("state poisoned").unlock(&source, &dir);
+    let mut guard = state.lock().expect("state poisoned");
+    let result = guard.unlock(&source, &dir);
     #[cfg(debug_assertions)]
     match &result {
         Ok(()) => eprintln!("[scratchpad] unlocked"),
         Err(e) => eprintln!("[scratchpad] unlock failed: {e:?}"),
+    }
+    // Retention runs right after every unlock.
+    if result.is_ok() {
+        if let Ok(session) = guard.session_mut() {
+            match crate::core::retention::run(session, SystemClock.now_ms()) {
+                Ok(_report) => {
+                    #[cfg(debug_assertions)]
+                    eprintln!("[scratchpad] retention: {_report:?}");
+                }
+                Err(_e) => {
+                    #[cfg(debug_assertions)]
+                    eprintln!("[scratchpad] retention failed: {_e:?}");
+                }
+            }
+        }
     }
     result
 }
@@ -92,6 +108,19 @@ pub fn delete_document(state: Shared<'_>, id: String) -> Result<(), CoreError> {
         .expect("state poisoned")
         .session_mut()?
         .delete(&id)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn storage_stats(state: Shared<'_>) -> Result<StorageStats, CoreError> {
+    Ok(state.lock().expect("state poisoned").session()?.stats())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn run_retention_now(state: Shared<'_>) -> Result<RetentionReport, CoreError> {
+    let now = SystemClock.now_ms();
+    crate::core::retention::run(state.lock().expect("state poisoned").session_mut()?, now)
 }
 
 /// Recovery path when the stored data can no longer be decrypted (the

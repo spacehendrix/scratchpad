@@ -76,6 +76,22 @@ async deleteDocument(id: string) : Promise<Result<null, CoreError>> {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+async storageStats() : Promise<Result<StorageStats, CoreError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("storage_stats") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async runRetentionNow() : Promise<Result<RetentionReport, CoreError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("run_retention_now") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -126,6 +142,17 @@ export type Document = {
  * UUIDv7 (time-ordered).
  */
 id: string; title: string | null; body: string; meta: DocMeta }
+export type RetentionReport = { archived: number; deletedByAge: number; deletedBySpace: number; 
+/**
+ * Destructive passes were skipped because system time regressed.
+ */
+skippedClockSkew: boolean }
+export type StorageStats = { dbBytes: number; limitBytes: number; docCount: number; archivedCount: number; pinnedCount: number; 
+/**
+ * True when over the limit but only pinned documents remain — saves are
+ * refused until the user unpins or deletes something.
+ */
+overCapacity: boolean }
 
 /** tauri-specta globals **/
 
