@@ -2,5 +2,7 @@
 // this tree — the UI layer must stay swappable.
 pub mod crypto;
 pub mod error;
+pub mod keychain;
 pub mod model;
 pub mod state;
+pub mod store;

@@ -81,6 +81,37 @@ pub struct SearchHit {
     pub in_body: bool,
 }
 
+/// Longest preview kept in metadata (chars, not bytes).
+pub const PREVIEW_MAX_CHARS: usize = 80;
+
+/// First non-empty line of the body, char-boundary-safe truncated.
+/// This is the display name for the (common) untitled document.
+pub fn derive_preview(body: &str) -> String {
+    body.lines()
+        .map(str::trim)
+        .find(|l| !l.is_empty())
+        .map(|l| l.chars().take(PREVIEW_MAX_CHARS).collect())
+        .unwrap_or_default()
+}
+
+/// Count checklist items. A line is an item when, after trimming and an
+/// optional `- ` / `* ` bullet, it starts with `[ ]`, `[x]` or `[X]`.
+pub fn derive_checklist(body: &str) -> Option<ChecklistCounts> {
+    let mut done = 0u32;
+    let mut total = 0u32;
+    for line in body.lines() {
+        let l = line.trim_start();
+        let l = l.strip_prefix("- ").or_else(|| l.strip_prefix("* ")).unwrap_or(l);
+        if l.starts_with("[ ]") {
+            total += 1;
+        } else if l.starts_with("[x]") || l.starts_with("[X]") {
+            total += 1;
+            done += 1;
+        }
+    }
+    (total > 0).then_some(ChecklistCounts { done, total })
+}
+
 #[derive(Debug, Clone, Default, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct RetentionReport {
