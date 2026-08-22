@@ -3,6 +3,14 @@
 
   let { onunlocked }: { onunlocked: () => void } = $props();
 
+  // Built programmatically so the borders always match the label width.
+  const LABEL = "  s c r a t c h p a d  ";
+  const logo = [
+    `┌${"─".repeat(LABEL.length)}┐`,
+    `│${LABEL}│`,
+    `└${"─".repeat(LABEL.length)}┘`,
+  ].join("\n");
+
   type Status = "authenticating" | "done" | "denied" | "corrupt" | "error";
   let status = $state<Status>("authenticating");
   let detail = $state("");
@@ -70,9 +78,7 @@
 <svelte:window {onkeydown} />
 
 <main class="unlock">
-  <pre class="logo">{`┌─────────────────────┐
-│  s c r a t c h p a d │
-└─────────────────────┘`}</pre>
+  <pre class="logo">{logo}</pre>
 
   {#if status === "authenticating"}
     <p class="line dim">authenticating …</p>
@@ -115,6 +121,8 @@
   .logo {
     color: var(--fg);
     margin-bottom: 1rem;
+    /* Box-drawing glyphs only connect vertically at line-height 1. */
+    line-height: 1;
   }
   .line {
     max-width: 34rem;
