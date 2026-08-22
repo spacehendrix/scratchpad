@@ -4,6 +4,7 @@
   import { session } from "../stores/session.svelte";
   import { dispatch, type Keymap } from "../keyboard";
   import { displayName, relativeAge } from "../format";
+  import Spinner from "./Spinner.svelte";
 
   let query = $state("");
   let scopeArchived = $state(false);
@@ -78,7 +79,7 @@
     <span class="scope" class:archived={scopeArchived}>
       {scopeArchived ? "[archive]" : "[active]"}
     </span>
-    {#if busy}<span class="busy">…</span>{/if}
+    {#if busy}<Spinner />{/if}
   </div>
 
   <div class="results">
@@ -105,15 +106,14 @@
     {/each}
   </div>
 
-  <p class="hints">[⇥] scope · [↑↓] move · [⏎] open · [esc] back</p>
 </div>
 
 <style>
   .searchview {
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    padding: 2rem 1.5rem 0.75rem;
+    height: 100%;
+    padding: 0.4rem 0;
   }
   .bar {
     display: flex;
@@ -144,9 +144,6 @@
   .scope.archived {
     color: var(--accent, var(--fg));
     opacity: 1;
-  }
-  .busy {
-    opacity: 0.5;
   }
   .results {
     flex: 1;
@@ -184,10 +181,5 @@
   .empty {
     opacity: 0.4;
     padding: 1rem 0.5rem;
-  }
-  .hints {
-    opacity: 0.35;
-    padding-top: 0.5rem;
-    text-align: center;
   }
 </style>

@@ -1,5 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { displayName, relativeAge } from "./format";
+import { displayName, fmtBytes, relativeAge } from "./format";
+
+describe("fmtBytes", () => {
+  it("buckets with sensible precision", () => {
+    expect(fmtBytes(0)).toBe("0 B");
+    expect(fmtBytes(512)).toBe("512 B");
+    expect(fmtBytes(1400)).toBe("1.4 kB");
+    expect(fmtBytes(890_000)).toBe("890 kB");
+    expect(fmtBytes(1_400_000)).toBe("1.4 MB");
+    expect(fmtBytes(142_000_000)).toBe("142 MB");
+    expect(fmtBytes(5_000_000_000)).toBe("5.0 GB");
+  });
+});
 
 describe("displayName", () => {
   it("prefers title, then preview, then untitled", () => {

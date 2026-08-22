@@ -127,7 +127,7 @@
       <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_tabindex -->
       <pre class="layer ghost" bind:this={preEl} aria-hidden="true">{#each lines as ln, i}{#if i > 0}{"\n"}{/if}{#if ln.kind === "todo" || ln.kind === "done"}<span class="line {ln.kind}">{ln.head}<span class="cb" role="checkbox" aria-checked={ln.kind === "done"} tabindex="-1" onclick={() => clickToggle(i)}>{ln.box}</span><span class="tail">{ln.tail}</span></span>{:else}<span class="line {ln.kind}">{ln.text}</span>{/if}{/each}{"\n"}</pre>
     </div>
-    <p class="hints">[esc] back · [⌘⏎] toggle{dirty ? " · ~" : ""}</p>
+    {#if dirty}<span class="dirty" aria-hidden="true">~</span>{/if}
   {:else}
     <p class="loading">…</p>
   {/if}
@@ -135,10 +135,17 @@
 
 <style>
   .editor {
+    position: relative;
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    padding: 2rem 1.5rem 0.75rem;
+    height: 100%;
+    padding: 0.4rem 0;
+  }
+  .dirty {
+    position: absolute;
+    top: 0.4rem;
+    right: 0;
+    color: var(--fg-dim);
   }
   .title {
     background: transparent;
@@ -215,9 +222,5 @@
   .loading {
     opacity: 0.4;
   }
-  .hints {
-    opacity: 0.35;
-    padding-top: 0.5rem;
-    text-align: center;
-  }
+
 </style>

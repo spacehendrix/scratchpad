@@ -4,6 +4,7 @@
   import { togglePin } from "../api";
   import { dispatch, type Keymap } from "../keyboard";
   import DocRow from "./DocRow.svelte";
+  import Cursor from "./Cursor.svelte";
 
   let selectedIndex = $state(0);
   let now = $state(Date.now());
@@ -62,7 +63,7 @@
 
 <div class="browse">
   {#if documents.catalog.length === 0}
-    <p class="empty">nothing here · [n] new</p>
+    <p class="empty">nothing here · [n] new <Cursor /></p>
   {:else}
     <div class="list">
       {#each documents.catalog as meta, i (meta.id)}
@@ -70,15 +71,14 @@
       {/each}
     </div>
   {/if}
-  <p class="hints">[n] new · [⏎] open · [j/k] move · [p] pin · [/] search · [,] theme</p>
 </div>
 
 <style>
   .browse {
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    padding: 2rem 1.5rem 0.75rem;
+    height: 100%;
+    padding: 0.4rem 0;
   }
   .list {
     flex: 1;
@@ -89,11 +89,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0.4;
-  }
-  .hints {
-    opacity: 0.35;
-    padding-top: 0.5rem;
-    text-align: center;
+    opacity: 0.5;
   }
 </style>

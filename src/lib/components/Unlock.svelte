@@ -3,17 +3,27 @@
 
   let { onunlocked }: { onunlocked: () => void } = $props();
 
-  type Status = "authenticating" | "denied" | "corrupt" | "error";
+  type Status = "authenticating" | "done" | "denied" | "corrupt" | "error";
   let status = $state<Status>("authenticating");
   let detail = $state("");
   let confirmText = $state("");
   let confirmInput = $state<HTMLInputElement | undefined>(undefined);
 
+  /** Brief "typed" reveal before handing over to the app. */
+  function finish() {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      onunlocked();
+      return;
+    }
+    status = "done";
+    setTimeout(onunlocked, 420);
+  }
+
   async function attempt() {
     status = "authenticating";
     try {
       await unlock();
-      onunlocked();
+      finish();
     } catch (e) {
       const kind = errorKind(e);
       if (kind === "corrupt") {
@@ -34,7 +44,7 @@
     status = "authenticating";
     try {
       await startFresh();
-      onunlocked();
+      finish();
     } catch (e) {
       status = "error";
       detail = errorKind(e);
@@ -66,6 +76,8 @@
 
   {#if status === "authenticating"}
     <p class="line dim">authenticating …</p>
+  {:else if status === "done"}
+    <p class="line typed ok">▸ unlocked</p>
   {:else if status === "denied"}
     <p class="line warn">✗ authentication cancelled</p>
     <p class="line dim">[r] retry</p>
@@ -113,6 +125,24 @@
   }
   .warn {
     color: var(--warn);
+  }
+  .ok {
+    color: var(--ok);
+  }
+  /* Monospace makes a steps() width animation read as typing. */
+  .typed {
+    overflow: hidden;
+    white-space: nowrap;
+    width: 10ch;
+    animation: typing 0.32s steps(10);
+  }
+  @keyframes typing {
+    from {
+      width: 0;
+    }
+    to {
+      width: 10ch;
+    }
   }
   .err {
     color: var(--err);

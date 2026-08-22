@@ -38,7 +38,6 @@
 <svelte:window onkeydown={(e) => dispatch(keymap, e)} />
 
 <div class="settingsview">
-  <p class="heading">── theme ──</p>
   <div class="list">
     {#each themes as theme, i (theme.id)}
       <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -64,22 +63,18 @@
       </div>
     {/each}
   </div>
-  <p class="hints">[j/k] preview · [⏎] apply · [esc] cancel</p>
 </div>
 
 <style>
   .settingsview {
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    padding: 2rem 1.5rem 0.75rem;
-  }
-  .heading {
-    color: var(--fg-dim);
-    margin-bottom: 0.75rem;
+    height: 100%;
+    padding: 0.4rem 0;
   }
   .list {
     flex: 1;
+    overflow-y: auto;
   }
   .row {
     display: flex;
@@ -102,10 +97,5 @@
   }
   .swatch {
     letter-spacing: 0.15rem;
-  }
-  .hints {
-    opacity: 0.35;
-    padding-top: 0.5rem;
-    text-align: center;
   }
 </style>
