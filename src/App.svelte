@@ -24,6 +24,9 @@
 
 <svelte:window {onkeydown} />
 
+<!-- Overlay titlebar: this strip is the draggable window handle. -->
+<div class="dragbar" data-tauri-drag-region></div>
+
 {#if session.locked}
   <Unlock onunlocked={() => (session.locked = false)} />
 {:else}
@@ -46,6 +49,14 @@
 <div class="scanlines" aria-hidden="true"></div>
 
 <style>
+  .dragbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1.75rem;
+    z-index: 10;
+  }
   .app {
     display: flex;
     flex-direction: column;
