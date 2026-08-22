@@ -1,0 +1,14 @@
+:root[data-theme="night-owl"] {
+  --bg: #011627;
+  --bg-alt: #01111d;
+  --fg: #d6deeb;
+  --fg-dim: #637777;
+  --accent: #82aaff;
+  --accent2: #c792ea;
+  --ok: #addb67;
+  --warn: #ecc48d;
+  --err: #ef5350;
+  --border: #122d42;
+  --sel-bg: #1d3b53;
+  --cursor: #80a4c2;
+}

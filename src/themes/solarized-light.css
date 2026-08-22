@@ -1,0 +1,15 @@
+/* Light */
+:root[data-theme="solarized-light"] {
+  --bg: #fdf6e3;
+  --bg-alt: #eee8d5;
+  --fg: #657b83;
+  --fg-dim: #93a1a1;
+  --accent: #268bd2;
+  --accent2: #6c71c4;
+  --ok: #859900;
+  --warn: #b58900;
+  --err: #dc322f;
+  --border: #d9d2c0;
+  --sel-bg: #eee8d5;
+  --cursor: #586e75;
+}

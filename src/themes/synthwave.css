@@ -1,0 +1,14 @@
+:root[data-theme="synthwave"] {
+  --bg: #241b2f;
+  --bg-alt: #1e1726;
+  --fg: #f0eff1;
+  --fg-dim: #848bbd;
+  --accent: #ff7edb;
+  --accent2: #36f9f6;
+  --ok: #72f1b8;
+  --warn: #fede5d;
+  --err: #fe4450;
+  --border: #34294f;
+  --sel-bg: #463465;
+  --cursor: #ff7edb;
+}

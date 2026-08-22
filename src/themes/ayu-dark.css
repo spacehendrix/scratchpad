@@ -1,0 +1,14 @@
+:root[data-theme="ayu-dark"] {
+  --bg: #0f1419;
+  --bg-alt: #0a0e12;
+  --fg: #e6e1cf;
+  --fg-dim: #5c6773;
+  --accent: #ffb454;
+  --accent2: #59c2ff;
+  --ok: #b8cc52;
+  --warn: #ff8f40;
+  --err: #f07178;
+  --border: #1d242c;
+  --sel-bg: #253340;
+  --cursor: #e6b450;
+}

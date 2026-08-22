@@ -1,0 +1,15 @@
+/* True black · green phosphor CRT */
+:root[data-theme="green-term"] {
+  --bg: #000000;
+  --bg-alt: #000000;
+  --fg: #33ff66;
+  --fg-dim: #1a8033;
+  --accent: #99ffbb;
+  --accent2: #00cc44;
+  --ok: #33ff66;
+  --warn: #ccff33;
+  --err: #ff5533;
+  --border: #052b12;
+  --sel-bg: #03210d;
+  --cursor: #33ff66;
+}

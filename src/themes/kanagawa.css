@@ -1,0 +1,14 @@
+:root[data-theme="kanagawa"] {
+  --bg: #1f1f28;
+  --bg-alt: #16161d;
+  --fg: #dcd7ba;
+  --fg-dim: #727169;
+  --accent: #7e9cd8;
+  --accent2: #957fb8;
+  --ok: #98bb6c;
+  --warn: #e6c384;
+  --err: #c34043;
+  --border: #2a2a37;
+  --sel-bg: #2d4f67;
+  --cursor: #c8c093;
+}

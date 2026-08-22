@@ -1,0 +1,15 @@
+/* True black · neon accents */
+:root[data-theme="oled-neon"] {
+  --bg: #000000;
+  --bg-alt: #000000;
+  --fg: #d4d4e8;
+  --fg-dim: #4d4d66;
+  --accent: #00e5ff;
+  --accent2: #ff2ec4;
+  --ok: #00ff9c;
+  --warn: #ffcc00;
+  --err: #ff3355;
+  --border: #16161f;
+  --sel-bg: #12121c;
+  --cursor: #00e5ff;
+}

@@ -1,0 +1,15 @@
+/* True black · monochrome */
+:root[data-theme="void"] {
+  --bg: #000000;
+  --bg-alt: #000000;
+  --fg: #e0e0e0;
+  --fg-dim: #555555;
+  --accent: #ffffff;
+  --accent2: #999999;
+  --ok: #7fd962;
+  --warn: #e6c384;
+  --err: #f07178;
+  --border: #1f1f1f;
+  --sel-bg: #1a1a1a;
+  --cursor: #ffffff;
+}

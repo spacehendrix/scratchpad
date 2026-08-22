@@ -1,0 +1,14 @@
+:root[data-theme="one-dark"] {
+  --bg: #282c34;
+  --bg-alt: #21252b;
+  --fg: #abb2bf;
+  --fg-dim: #5c6370;
+  --accent: #61afef;
+  --accent2: #c678dd;
+  --ok: #98c379;
+  --warn: #e5c07b;
+  --err: #e06c75;
+  --border: #3e4451;
+  --sel-bg: #3e4451;
+  --cursor: #528bff;
+}

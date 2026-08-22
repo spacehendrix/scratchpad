@@ -1,0 +1,15 @@
+/* True black · amber phosphor CRT */
+:root[data-theme="amber-term"] {
+  --bg: #000000;
+  --bg-alt: #000000;
+  --fg: #ffb000;
+  --fg-dim: #805800;
+  --accent: #ffd75f;
+  --accent2: #ff8c00;
+  --ok: #ffb000;
+  --warn: #ffd75f;
+  --err: #ff4d00;
+  --border: #2b1d00;
+  --sel-bg: #1f1500;
+  --cursor: #ffb000;
+}

@@ -1,0 +1,14 @@
+:root[data-theme="monokai"] {
+  --bg: #272822;
+  --bg-alt: #1e1f1c;
+  --fg: #f8f8f2;
+  --fg-dim: #75715e;
+  --accent: #66d9ef;
+  --accent2: #ae81ff;
+  --ok: #a6e22e;
+  --warn: #fd971f;
+  --err: #f92672;
+  --border: #3e3d32;
+  --sel-bg: #49483e;
+  --cursor: #f8f8f2;
+}

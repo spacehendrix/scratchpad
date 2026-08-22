@@ -1,0 +1,14 @@
+:root[data-theme="dracula"] {
+  --bg: #282a36;
+  --bg-alt: #21222c;
+  --fg: #f8f8f2;
+  --fg-dim: #6272a4;
+  --accent: #bd93f9;
+  --accent2: #ff79c6;
+  --ok: #50fa7b;
+  --warn: #f1fa8c;
+  --err: #ff5555;
+  --border: #44475a;
+  --sel-bg: #44475a;
+  --cursor: #f8f8f2;
+}
