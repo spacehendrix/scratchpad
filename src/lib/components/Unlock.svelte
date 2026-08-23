@@ -57,7 +57,7 @@
         grid[1 + i][1 + j] = ch;
       });
     });
-    return grid.map((row) => row.join("")).join("\n");
+    return grid.map((row) => row.join(""));
   });
 
   // Periodic "decode" scramble: letters churn through random glyphs and
@@ -177,7 +177,11 @@
 <svelte:window {onkeydown} />
 
 <main class="unlock">
-  <pre class="logo">{logo}</pre>
+  <div class="logo">
+    {#each logo as line, i (i)}
+      <pre class="row" class:tuck-below={i === 0} class:tuck-above={i === ROWS - 1}>{line}</pre>
+    {/each}
+  </div>
 
   {#if status === "authenticating"}
     <p class="line dim">authenticating …</p>
@@ -220,8 +224,19 @@
   .logo {
     color: var(--fg);
     margin-bottom: 1rem;
+  }
+  .row {
+    margin: 0;
     /* Box-drawing glyphs only connect vertically at line-height 1. */
     line-height: 1;
+  }
+  /* Character cells are ~2x taller than wide, so the ring rows are pulled
+     toward the box to even out the visual gap. */
+  .tuck-below {
+    margin-bottom: -0.4em;
+  }
+  .tuck-above {
+    margin-top: -0.4em;
   }
   .line {
     max-width: 34rem;
