@@ -5,11 +5,53 @@
 
   // Built programmatically so the borders always match the label width.
   const LABEL = "  s c r a t c h p a d  ";
-  const logo = [
-    `┌${"─".repeat(LABEL.length)}┐`,
-    `│${LABEL}│`,
-    `└${"─".repeat(LABEL.length)}┘`,
-  ].join("\n");
+  let label = $state(LABEL);
+  const logo = $derived(
+    [
+      `┌${"─".repeat(LABEL.length)}┐`,
+      `│${label}│`,
+      `└${"─".repeat(LABEL.length)}┘`,
+    ].join("\n"),
+  );
+
+  // Periodic "decode" scramble: letters churn through random glyphs and
+  // resolve left-to-right. Spaces are never touched, so the width (and the
+  // box) stays fixed.
+  const POOL = "#*+=<>?/\\|~^%$&░▒▓";
+  const LETTER_IDXS = [...LABEL].map((c, i) => (c === " " ? -1 : i)).filter((i) => i >= 0);
+
+  function scrambleOnce(): () => void {
+    const FRAMES = 16;
+    let frame = 0;
+    const timer = setInterval(() => {
+      frame++;
+      label = [...LABEL]
+        .map((c, i) => {
+          if (c === " ") return " ";
+          const resolved = LETTER_IDXS.indexOf(i) / LETTER_IDXS.length < frame / FRAMES;
+          return resolved ? c : POOL[Math.floor(Math.random() * POOL.length)];
+        })
+        .join("");
+      if (frame >= FRAMES) {
+        clearInterval(timer);
+        label = LABEL;
+      }
+    }, 45);
+    return () => clearInterval(timer);
+  }
+
+  $effect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let stopRun: (() => void) | undefined;
+    const first = setTimeout(() => (stopRun = scrambleOnce()), 900);
+    const every = setInterval(() => (stopRun = scrambleOnce()), 4200);
+    return () => {
+      clearTimeout(first);
+      clearInterval(every);
+      stopRun?.();
+      label = LABEL;
+    };
+  });
 
   type Status = "authenticating" | "done" | "denied" | "corrupt" | "error";
   let status = $state<Status>("authenticating");
