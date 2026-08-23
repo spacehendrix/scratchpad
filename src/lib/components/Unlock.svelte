@@ -11,9 +11,9 @@
   // visible only while scrambling. Two gaps, diametrically opposite, orbit
   // the perimeter anticlockwise.
   const INNER_W = LABEL.length + 2;
-  const COLS = INNER_W + 4;
+  const COLS = INNER_W + 2;
   const ROWS = 5;
-  const GAP = 4;
+  const GAP = 8;
   // Perimeter cells in clockwise order; anticlockwise motion walks it backwards.
   const PATH: Array<[number, number]> = [];
   for (let c = 0; c < COLS; c++) PATH.push([0, c]);
@@ -54,7 +54,7 @@
     ];
     inner.forEach((line, i) => {
       [...line].forEach((ch, j) => {
-        grid[1 + i][2 + j] = ch;
+        grid[1 + i][1 + j] = ch;
       });
     });
     return grid.map((row) => row.join("")).join("\n");
