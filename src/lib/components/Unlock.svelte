@@ -7,48 +7,6 @@
   const LABEL = "  s c r a t c h p a d  ";
   let label = $state(LABEL);
 
-  // Outer ring: a second, wider box drawn one cell outside the logo box,
-  // visible only while scrambling. Two gaps, diametrically opposite, orbit
-  // the perimeter anticlockwise.
-  const INNER_W = LABEL.length + 2;
-  const COLS = INNER_W + 2;
-  const ROWS = 5;
-  const GAP = 8;
-  // Perimeter cells in clockwise order; anticlockwise motion walks it backwards.
-  const PATH: Array<[number, number]> = [];
-  for (let c = 0; c < COLS; c++) PATH.push([0, c]);
-  for (let r = 1; r < ROWS; r++) PATH.push([r, COLS - 1]);
-  for (let c = COLS - 2; c >= 0; c--) PATH.push([ROWS - 1, c]);
-  for (let r = ROWS - 2; r >= 1; r--) PATH.push([r, 0]);
-  const P = PATH.length;
-  const HALF = Math.floor(P / 2);
-  const mod = (n: number, m: number) => ((n % m) + m) % m;
-
-  let ringOffset = $state(0);
-  let ringActive = $state(false);
-  /** 0 = min padding (resting), 1 = max padding; one sine pulse per scramble. */
-  let ringPulse = $state(0);
-  // The ring is its own layer scaled as ONE unit, so it can never come apart
-  // at the corners. Peak scale ≈ +0.45em of padding on every side.
-  const ringScale = $derived({
-    x: (1 + ringPulse * 0.06).toFixed(4),
-    y: (1 + ringPulse * 0.3).toFixed(4),
-  });
-
-  function ringChar(r: number, c: number): string {
-    if (r === 0 && c === 0) return "┌";
-    if (r === 0 && c === COLS - 1) return "┐";
-    if (r === ROWS - 1 && c === 0) return "└";
-    if (r === ROWS - 1 && c === COLS - 1) return "┘";
-    if (r === 0 || r === ROWS - 1) return "─";
-    // The tucked top/bottom rows overlap the side cells, so full-height
-    // strokes next to the corners poke past them ("horns"). Half-height
-    // strokes keep the sides inside the corners.
-    if (r === 1) return "╷";
-    if (r === ROWS - 2) return "╵";
-    return "│";
-  }
-
   const box = $derived(
     [
       `┌${"─".repeat(LABEL.length)}┐`,
@@ -56,21 +14,6 @@
       `└${"─".repeat(LABEL.length)}┘`,
     ].join("\n"),
   );
-
-  const ring = $derived.by(() => {
-    const grid: string[][] = Array.from({ length: ROWS }, () => Array(COLS).fill(" "));
-    if (ringActive) {
-      const gaps = new Set<number>();
-      for (let k = 0; k < GAP; k++) {
-        gaps.add(mod(ringOffset + k, P));
-        gaps.add(mod(ringOffset + HALF + k, P));
-      }
-      PATH.forEach(([r, c], idx) => {
-        grid[r][c] = gaps.has(idx) ? " " : ringChar(r, c);
-      });
-    }
-    return grid.map((row) => row.join("")).join("\n");
-  });
 
   // Periodic "decode" scramble: letters churn through random glyphs and
   // resolve left-to-right. Spaces are never touched, so the width (and the
@@ -84,11 +27,8 @@
     const RESOLVE_FRAMES = 16;
     const FRAMES = HOLD_FRAMES + RESOLVE_FRAMES;
     let frame = 0;
-    ringActive = true;
     const timer = setInterval(() => {
       frame++;
-      ringOffset = mod(ringOffset - 1, P); // anticlockwise
-      ringPulse = Math.sin((Math.PI * frame) / FRAMES); // min → max → min
       const progress = Math.max(0, frame - HOLD_FRAMES) / RESOLVE_FRAMES;
       label = [...LABEL]
         .map((c, i) => {
@@ -100,15 +40,9 @@
       if (frame >= FRAMES) {
         clearInterval(timer);
         label = LABEL;
-        ringActive = false;
-        ringPulse = 0;
       }
     }, 45);
-    return () => {
-      clearInterval(timer);
-      ringActive = false;
-      ringPulse = 0;
-    };
+    return () => clearInterval(timer);
   }
 
   $effect(() => {
@@ -121,7 +55,6 @@
       clearInterval(every);
       stopRun?.();
       label = LABEL;
-      ringActive = false;
     };
   });
 
@@ -192,13 +125,7 @@
 <svelte:window {onkeydown} />
 
 <main class="unlock">
-  <div class="logo">
-    <pre
-      class="ring"
-      aria-hidden="true"
-      style={`transform: translate(-50%, -50%) scale(${ringScale.x}, ${ringScale.y})`}>{ring}</pre>
-    <pre class="box">{box}</pre>
-  </div>
+  <pre class="logo">{box}</pre>
 
   {#if status === "authenticating"}
     <p class="line dim">authenticating …</p>
@@ -239,29 +166,10 @@
     gap: 0.75rem;
   }
   .logo {
-    position: relative;
     color: var(--fg);
     margin-bottom: 1rem;
-    /* Reserve room for the ring at its widest so nothing ever reflows. */
-    padding: 1.1em 1.5ch;
-  }
-  .box {
-    margin: 0;
     /* Box-drawing glyphs only connect vertically at line-height 1. */
     line-height: 1;
-  }
-  /* The ring is one element scaled as a unit — no seams. Compressed
-     line-height/letter-spacing give the tight resting fit; the pulse only
-     scales it up from there. */
-  .ring {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    margin: 0;
-    line-height: 0.7;
-    letter-spacing: -0.04ch;
-    pointer-events: none;
-    transition: transform 45ms linear;
   }
   .line {
     max-width: 34rem;
