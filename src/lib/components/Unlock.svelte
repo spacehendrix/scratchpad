@@ -17,7 +17,7 @@
   // Periodic "decode" scramble: letters churn through random glyphs and
   // resolve left-to-right. Spaces are never touched, so the width (and the
   // box) stays fixed.
-  const POOL = "#*+=<>?/\\|~^%$&░▒▓";
+  const POOL = "abcdefghijklmnopqrstuvwxyz#*+=<>?/\\|~^%$&@!";
   const LETTER_IDXS = [...LABEL].map((c, i) => (c === " " ? -1 : i)).filter((i) => i >= 0);
 
   function scrambleOnce(): () => void {
