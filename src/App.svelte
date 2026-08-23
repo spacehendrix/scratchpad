@@ -31,7 +31,7 @@
   <Unlock onunlocked={() => (session.locked = false)} />
 {:else}
   <div class="app">
-    <Rule label={LABELS[session.view] ?? "scratchpad"} />
+    <Rule label={LABELS[session.view] ?? "scratchpad"} intro />
     <main class="content">
       {#if session.view === "editor"}
         <Editor />
