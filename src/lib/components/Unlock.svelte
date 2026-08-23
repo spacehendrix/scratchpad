@@ -21,14 +21,18 @@
   const LETTER_IDXS = [...LABEL].map((c, i) => (c === " " ? -1 : i)).filter((i) => i >= 0);
 
   function scrambleOnce(): () => void {
-    const FRAMES = 16;
+    // Full-churn hold first, then resolve left-to-right.
+    const HOLD_FRAMES = 22;
+    const RESOLVE_FRAMES = 16;
+    const FRAMES = HOLD_FRAMES + RESOLVE_FRAMES;
     let frame = 0;
     const timer = setInterval(() => {
       frame++;
+      const progress = Math.max(0, frame - HOLD_FRAMES) / RESOLVE_FRAMES;
       label = [...LABEL]
         .map((c, i) => {
           if (c === " ") return " ";
-          const resolved = LETTER_IDXS.indexOf(i) / LETTER_IDXS.length < frame / FRAMES;
+          const resolved = LETTER_IDXS.indexOf(i) / LETTER_IDXS.length < progress;
           return resolved ? c : POOL[Math.floor(Math.random() * POOL.length)];
         })
         .join("");
