@@ -28,8 +28,10 @@
   let ringActive = $state(false);
   /** 0 = min padding (resting), 1 = max padding; one sine pulse per scramble. */
   let ringPulse = $state(0);
-  const PULSE_CH = 0.45; // horizontal breathing amplitude
-  const PULSE_EM = 0.45; // vertical breathing amplitude
+  // Equal *visual* breathing on both axes: 1ch is only ~0.6em wide, so the
+  // horizontal amplitude in ch must be larger to travel the same distance.
+  const PULSE_EM = 0.45; // vertical amplitude
+  const PULSE_CH = 0.75; // horizontal amplitude (~0.45em)
 
   function ringChar(r: number, c: number): string {
     if (r === 0 && c === 0) return "┌";
