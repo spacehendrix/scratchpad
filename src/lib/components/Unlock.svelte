@@ -32,7 +32,13 @@
     if (r === 0 && c === COLS - 1) return "┐";
     if (r === ROWS - 1 && c === 0) return "└";
     if (r === ROWS - 1 && c === COLS - 1) return "┘";
-    return r === 0 || r === ROWS - 1 ? "─" : "│";
+    if (r === 0 || r === ROWS - 1) return "─";
+    // The tucked top/bottom rows overlap the side cells, so full-height
+    // strokes next to the corners poke past them ("horns"). Half-height
+    // strokes keep the sides inside the corners.
+    if (r === 1) return "╷";
+    if (r === ROWS - 2) return "╵";
+    return "│";
   }
 
   const logo = $derived.by(() => {
