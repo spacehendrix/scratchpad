@@ -32,12 +32,9 @@
     return r === 0 || r === ROWS - 1 ? "─" : "│";
   }
 
+  /** Drives the split width: 0 → 1 → 0 over each scramble. */
   let pulse = $state(0);
   let splitOffset = $state(0);
-  const frameScale = $derived({
-    x: (1 + pulse * 0.06).toFixed(4),
-    y: (1 + pulse * 0.3).toFixed(4),
-  });
 
   const frame = $derived.by(() => {
     const grid: string[][] = Array.from({ length: ROWS }, () => Array(COLS).fill(" "));
@@ -173,10 +170,7 @@
 
 <main class="unlock">
   <div class="logo">
-    <pre
-      class="frame"
-      aria-hidden="true"
-      style={`transform: scale(${frameScale.x}, ${frameScale.y})`}>{frame}</pre>
+    <pre class="frame" aria-hidden="true">{frame}</pre>
     <pre class="label">{label}</pre>
   </div>
 
@@ -222,15 +216,11 @@
     position: relative;
     color: var(--fg);
     margin-bottom: 1rem;
-    /* Reserve the frame's maximum breathing room so nothing reflows. */
-    padding: 0.5em 1ch;
   }
-  /* Box-drawing glyphs only connect vertically at line-height 1. The frame
-     scales as one unit around the static label. */
+  /* Box-drawing glyphs only connect vertically at line-height 1. */
   .frame {
     margin: 0;
     line-height: 1;
-    transition: transform 45ms linear;
   }
   .label {
     position: absolute;
