@@ -6,13 +6,59 @@
   // Built programmatically so the borders always match the label width.
   const LABEL = "  s c r a t c h p a d  ";
   let label = $state(LABEL);
-  const logo = $derived(
-    [
+
+  // Outer ring: a second, wider box drawn one cell outside the logo box,
+  // visible only while scrambling. Two gaps, diametrically opposite, orbit
+  // the perimeter anticlockwise.
+  const INNER_W = LABEL.length + 2;
+  const COLS = INNER_W + 4;
+  const ROWS = 5;
+  const GAP = 4;
+  // Perimeter cells in clockwise order; anticlockwise motion walks it backwards.
+  const PATH: Array<[number, number]> = [];
+  for (let c = 0; c < COLS; c++) PATH.push([0, c]);
+  for (let r = 1; r < ROWS; r++) PATH.push([r, COLS - 1]);
+  for (let c = COLS - 2; c >= 0; c--) PATH.push([ROWS - 1, c]);
+  for (let r = ROWS - 2; r >= 1; r--) PATH.push([r, 0]);
+  const P = PATH.length;
+  const HALF = Math.floor(P / 2);
+  const mod = (n: number, m: number) => ((n % m) + m) % m;
+
+  let ringOffset = $state(0);
+  let ringActive = $state(false);
+
+  function ringChar(r: number, c: number): string {
+    if (r === 0 && c === 0) return "┌";
+    if (r === 0 && c === COLS - 1) return "┐";
+    if (r === ROWS - 1 && c === 0) return "└";
+    if (r === ROWS - 1 && c === COLS - 1) return "┘";
+    return r === 0 || r === ROWS - 1 ? "─" : "│";
+  }
+
+  const logo = $derived.by(() => {
+    const grid: string[][] = Array.from({ length: ROWS }, () => Array(COLS).fill(" "));
+    if (ringActive) {
+      const gaps = new Set<number>();
+      for (let k = 0; k < GAP; k++) {
+        gaps.add(mod(ringOffset + k, P));
+        gaps.add(mod(ringOffset + HALF + k, P));
+      }
+      PATH.forEach(([r, c], idx) => {
+        grid[r][c] = gaps.has(idx) ? " " : ringChar(r, c);
+      });
+    }
+    const inner = [
       `┌${"─".repeat(LABEL.length)}┐`,
       `│${label}│`,
       `└${"─".repeat(LABEL.length)}┘`,
-    ].join("\n"),
-  );
+    ];
+    inner.forEach((line, i) => {
+      [...line].forEach((ch, j) => {
+        grid[1 + i][2 + j] = ch;
+      });
+    });
+    return grid.map((row) => row.join("")).join("\n");
+  });
 
   // Periodic "decode" scramble: letters churn through random glyphs and
   // resolve left-to-right. Spaces are never touched, so the width (and the
@@ -26,8 +72,10 @@
     const RESOLVE_FRAMES = 16;
     const FRAMES = HOLD_FRAMES + RESOLVE_FRAMES;
     let frame = 0;
+    ringActive = true;
     const timer = setInterval(() => {
       frame++;
+      ringOffset = mod(ringOffset - 1, P); // anticlockwise
       const progress = Math.max(0, frame - HOLD_FRAMES) / RESOLVE_FRAMES;
       label = [...LABEL]
         .map((c, i) => {
@@ -39,9 +87,13 @@
       if (frame >= FRAMES) {
         clearInterval(timer);
         label = LABEL;
+        ringActive = false;
       }
     }, 45);
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      ringActive = false;
+    };
   }
 
   $effect(() => {
@@ -54,6 +106,7 @@
       clearInterval(every);
       stopRun?.();
       label = LABEL;
+      ringActive = false;
     };
   });
 
