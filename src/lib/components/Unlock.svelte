@@ -9,16 +9,50 @@
 
   // The border is its own layer so it can pulse around the static label:
   // one min → max → min breath per scramble, scaled as a single unit.
-  const FRAME = [
-    `┌${"─".repeat(LABEL.length)}┐`,
-    `│${" ".repeat(LABEL.length)}│`,
-    `└${"─".repeat(LABEL.length)}┘`,
-  ].join("\n");
+  // Two diametrically opposite splits orbit it anticlockwise, growing from
+  // nothing to MAX_GAP cells wide and closing again over the same cycle.
+  const COLS = LABEL.length + 2;
+  const ROWS = 3;
+  const MAX_GAP = 16;
+  // Perimeter cells in clockwise order; anticlockwise motion walks it backwards.
+  const PATH: Array<[number, number]> = [];
+  for (let c = 0; c < COLS; c++) PATH.push([0, c]);
+  for (let r = 1; r < ROWS; r++) PATH.push([r, COLS - 1]);
+  for (let c = COLS - 2; c >= 0; c--) PATH.push([ROWS - 1, c]);
+  for (let r = ROWS - 2; r >= 1; r--) PATH.push([r, 0]);
+  const P = PATH.length;
+  const HALF = Math.floor(P / 2);
+  const mod = (n: number, m: number) => ((n % m) + m) % m;
+
+  function frameChar(r: number, c: number): string {
+    if (r === 0 && c === 0) return "┌";
+    if (r === 0 && c === COLS - 1) return "┐";
+    if (r === ROWS - 1 && c === 0) return "└";
+    if (r === ROWS - 1 && c === COLS - 1) return "┘";
+    return r === 0 || r === ROWS - 1 ? "─" : "│";
+  }
 
   let pulse = $state(0);
+  let splitOffset = $state(0);
   const frameScale = $derived({
     x: (1 + pulse * 0.06).toFixed(4),
     y: (1 + pulse * 0.3).toFixed(4),
+  });
+
+  const frame = $derived.by(() => {
+    const grid: string[][] = Array.from({ length: ROWS }, () => Array(COLS).fill(" "));
+    // Splits grow around their centers with the pulse: 0 → MAX_GAP → 0.
+    const width = Math.round(pulse * MAX_GAP);
+    const gaps = new Set<number>();
+    for (let k = 0; k < width; k++) {
+      const spread = k - Math.floor(width / 2);
+      gaps.add(mod(splitOffset + spread, P));
+      gaps.add(mod(splitOffset + HALF + spread, P));
+    }
+    PATH.forEach(([r, c], idx) => {
+      grid[r][c] = gaps.has(idx) ? " " : frameChar(r, c);
+    });
+    return grid.map((row) => row.join("")).join("\n");
   });
 
   // Periodic "decode" scramble: letters churn through random glyphs and
@@ -36,6 +70,7 @@
     const timer = setInterval(() => {
       frame++;
       pulse = Math.sin((Math.PI * frame) / FRAMES); // min → max → min
+      splitOffset = mod(splitOffset - 1, P); // anticlockwise
       const progress = Math.max(0, frame - HOLD_FRAMES) / RESOLVE_FRAMES;
       label = [...LABEL]
         .map((c, i) => {
@@ -141,7 +176,7 @@
     <pre
       class="frame"
       aria-hidden="true"
-      style={`transform: scale(${frameScale.x}, ${frameScale.y})`}>{FRAME}</pre>
+      style={`transform: scale(${frameScale.x}, ${frameScale.y})`}>{frame}</pre>
     <pre class="label">{label}</pre>
   </div>
 
