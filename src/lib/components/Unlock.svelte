@@ -28,10 +28,12 @@
   let ringActive = $state(false);
   /** 0 = min padding (resting), 1 = max padding; one sine pulse per scramble. */
   let ringPulse = $state(0);
-  // Equal *visual* breathing on both axes: 1ch is only ~0.6em wide, so the
-  // horizontal amplitude in ch must be larger to travel the same distance.
-  const PULSE_EM = 0.45; // vertical amplitude
-  const PULSE_CH = 0.75; // horizontal amplitude (~0.45em)
+  // The ring is its own layer scaled as ONE unit, so it can never come apart
+  // at the corners. Peak scale ≈ +0.45em of padding on every side.
+  const ringScale = $derived({
+    x: (1 + ringPulse * 0.06).toFixed(4),
+    y: (1 + ringPulse * 0.3).toFixed(4),
+  });
 
   function ringChar(r: number, c: number): string {
     if (r === 0 && c === 0) return "┌";
@@ -47,7 +49,15 @@
     return "│";
   }
 
-  const logo = $derived.by(() => {
+  const box = $derived(
+    [
+      `┌${"─".repeat(LABEL.length)}┐`,
+      `│${label}│`,
+      `└${"─".repeat(LABEL.length)}┘`,
+    ].join("\n"),
+  );
+
+  const ring = $derived.by(() => {
     const grid: string[][] = Array.from({ length: ROWS }, () => Array(COLS).fill(" "));
     if (ringActive) {
       const gaps = new Set<number>();
@@ -59,22 +69,7 @@
         grid[r][c] = gaps.has(idx) ? " " : ringChar(r, c);
       });
     }
-    const inner = [
-      `┌${"─".repeat(LABEL.length)}┐`,
-      `│${label}│`,
-      `└${"─".repeat(LABEL.length)}┘`,
-    ];
-    inner.forEach((line, i) => {
-      [...line].forEach((ch, j) => {
-        grid[1 + i][1 + j] = ch;
-      });
-    });
-    // Split off the ring columns so CSS can nudge them toward the box.
-    return grid.map((row) => ({
-      left: row[0],
-      mid: row.slice(1, -1).join(""),
-      right: row[COLS - 1],
-    }));
+    return grid.map((row) => row.join("")).join("\n");
   });
 
   // Periodic "decode" scramble: letters churn through random glyphs and
@@ -198,22 +193,11 @@
 
 <main class="unlock">
   <div class="logo">
-    {#each logo as line, i (i)}
-      <pre
-        class="row"
-        class:tuck-below={i === 0}
-        class:tuck-above={i === ROWS - 1}
-        style={i === 0
-          ? `transform: translateY(${(-ringPulse * PULSE_EM).toFixed(3)}em)`
-          : i === ROWS - 1
-            ? `transform: translateY(${(ringPulse * PULSE_EM).toFixed(3)}em)`
-            : ""}><span class="side-l" style={`left: ${(0.4 - ringPulse * PULSE_CH).toFixed(3)}ch`}
-          >{line.left}</span
-        >{line.mid}<span
-          class="side-r"
-          style={`left: ${(-0.4 + ringPulse * PULSE_CH).toFixed(3)}ch`}>{line.right}</span
-        ></pre>
-    {/each}
+    <pre
+      class="ring"
+      aria-hidden="true"
+      style={`transform: translate(-50%, -50%) scale(${ringScale.x}, ${ringScale.y})`}>{ring}</pre>
+    <pre class="box">{box}</pre>
   </div>
 
   {#if status === "authenticating"}
@@ -255,27 +239,29 @@
     gap: 0.75rem;
   }
   .logo {
+    position: relative;
     color: var(--fg);
     margin-bottom: 1rem;
+    /* Reserve room for the ring at its widest so nothing ever reflows. */
+    padding: 1.1em 1.5ch;
   }
-  .row {
+  .box {
     margin: 0;
     /* Box-drawing glyphs only connect vertically at line-height 1. */
     line-height: 1;
   }
-  /* Character cells are ~2x taller than wide, so the ring rows are pulled
-     toward the box to even out the visual gap. */
-  .tuck-below {
-    margin-bottom: -0.55em;
-  }
-  .tuck-above {
-    margin-top: -0.55em;
-  }
-  /* Ring strokes sit centered in their cells; the inward nudge (and its
-     pulse) is driven per-frame via inline styles. */
-  .side-l,
-  .side-r {
-    position: relative;
+  /* The ring is one element scaled as a unit — no seams. Compressed
+     line-height/letter-spacing give the tight resting fit; the pulse only
+     scales it up from there. */
+  .ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: 0;
+    line-height: 0.7;
+    letter-spacing: -0.04ch;
+    pointer-events: none;
+    transition: transform 45ms linear;
   }
   .line {
     max-width: 34rem;
