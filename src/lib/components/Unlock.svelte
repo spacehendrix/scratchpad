@@ -26,6 +26,10 @@
 
   let ringOffset = $state(0);
   let ringActive = $state(false);
+  /** 0 = min padding (resting), 1 = max padding; one sine pulse per scramble. */
+  let ringPulse = $state(0);
+  const PULSE_CH = 0.45; // horizontal breathing amplitude
+  const PULSE_EM = 0.45; // vertical breathing amplitude
 
   function ringChar(r: number, c: number): string {
     if (r === 0 && c === 0) return "┌";
@@ -87,6 +91,7 @@
     const timer = setInterval(() => {
       frame++;
       ringOffset = mod(ringOffset - 1, P); // anticlockwise
+      ringPulse = Math.sin((Math.PI * frame) / FRAMES); // min → max → min
       const progress = Math.max(0, frame - HOLD_FRAMES) / RESOLVE_FRAMES;
       label = [...LABEL]
         .map((c, i) => {
@@ -99,11 +104,13 @@
         clearInterval(timer);
         label = LABEL;
         ringActive = false;
+        ringPulse = 0;
       }
     }, 45);
     return () => {
       clearInterval(timer);
       ringActive = false;
+      ringPulse = 0;
     };
   }
 
@@ -193,8 +200,17 @@
       <pre
         class="row"
         class:tuck-below={i === 0}
-        class:tuck-above={i === ROWS - 1}><span class="side-l">{line.left}</span>{line.mid}<span
-          class="side-r">{line.right}</span></pre>
+        class:tuck-above={i === ROWS - 1}
+        style={i === 0
+          ? `transform: translateY(${(-ringPulse * PULSE_EM).toFixed(3)}em)`
+          : i === ROWS - 1
+            ? `transform: translateY(${(ringPulse * PULSE_EM).toFixed(3)}em)`
+            : ""}><span class="side-l" style={`left: ${(0.4 - ringPulse * PULSE_CH).toFixed(3)}ch`}
+          >{line.left}</span
+        >{line.mid}<span
+          class="side-r"
+          style={`left: ${(-0.4 + ringPulse * PULSE_CH).toFixed(3)}ch`}>{line.right}</span
+        ></pre>
     {/each}
   </div>
 
@@ -253,15 +269,11 @@
   .tuck-above {
     margin-top: -0.55em;
   }
-  /* Ring strokes sit centered in their cells; nudge the side columns
-     inward so the horizontal gap tightens to match. */
-  .side-l {
-    position: relative;
-    left: 0.4ch;
-  }
+  /* Ring strokes sit centered in their cells; the inward nudge (and its
+     pulse) is driven per-frame via inline styles. */
+  .side-l,
   .side-r {
     position: relative;
-    left: -0.4ch;
   }
   .line {
     max-width: 34rem;
