@@ -7,13 +7,19 @@
   const LABEL = "  s c r a t c h p a d  ";
   let label = $state(LABEL);
 
-  const box = $derived(
-    [
-      `┌${"─".repeat(LABEL.length)}┐`,
-      `│${label}│`,
-      `└${"─".repeat(LABEL.length)}┘`,
-    ].join("\n"),
-  );
+  // The border is its own layer so it can pulse around the static label:
+  // one min → max → min breath per scramble, scaled as a single unit.
+  const FRAME = [
+    `┌${"─".repeat(LABEL.length)}┐`,
+    `│${" ".repeat(LABEL.length)}│`,
+    `└${"─".repeat(LABEL.length)}┘`,
+  ].join("\n");
+
+  let pulse = $state(0);
+  const frameScale = $derived({
+    x: (1 + pulse * 0.06).toFixed(4),
+    y: (1 + pulse * 0.3).toFixed(4),
+  });
 
   // Periodic "decode" scramble: letters churn through random glyphs and
   // resolve left-to-right. Spaces are never touched, so the width (and the
@@ -29,6 +35,7 @@
     let frame = 0;
     const timer = setInterval(() => {
       frame++;
+      pulse = Math.sin((Math.PI * frame) / FRAMES); // min → max → min
       const progress = Math.max(0, frame - HOLD_FRAMES) / RESOLVE_FRAMES;
       label = [...LABEL]
         .map((c, i) => {
@@ -40,9 +47,13 @@
       if (frame >= FRAMES) {
         clearInterval(timer);
         label = LABEL;
+        pulse = 0;
       }
     }, 45);
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      pulse = 0;
+    };
   }
 
   $effect(() => {
@@ -55,6 +66,7 @@
       clearInterval(every);
       stopRun?.();
       label = LABEL;
+      pulse = 0;
     };
   });
 
@@ -125,7 +137,13 @@
 <svelte:window {onkeydown} />
 
 <main class="unlock">
-  <pre class="logo">{box}</pre>
+  <div class="logo">
+    <pre
+      class="frame"
+      aria-hidden="true"
+      style={`transform: scale(${frameScale.x}, ${frameScale.y})`}>{FRAME}</pre>
+    <pre class="label">{label}</pre>
+  </div>
 
   {#if status === "authenticating"}
     <p class="line dim">authenticating …</p>
@@ -166,9 +184,25 @@
     gap: 0.75rem;
   }
   .logo {
+    position: relative;
     color: var(--fg);
     margin-bottom: 1rem;
-    /* Box-drawing glyphs only connect vertically at line-height 1. */
+    /* Reserve the frame's maximum breathing room so nothing reflows. */
+    padding: 0.5em 1ch;
+  }
+  /* Box-drawing glyphs only connect vertically at line-height 1. The frame
+     scales as one unit around the static label. */
+  .frame {
+    margin: 0;
+    line-height: 1;
+    transition: transform 45ms linear;
+  }
+  .label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
     line-height: 1;
   }
   .line {
