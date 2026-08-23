@@ -57,7 +57,12 @@
         grid[1 + i][1 + j] = ch;
       });
     });
-    return grid.map((row) => row.join(""));
+    // Split off the ring columns so CSS can nudge them toward the box.
+    return grid.map((row) => ({
+      left: row[0],
+      mid: row.slice(1, -1).join(""),
+      right: row[COLS - 1],
+    }));
   });
 
   // Periodic "decode" scramble: letters churn through random glyphs and
@@ -179,7 +184,11 @@
 <main class="unlock">
   <div class="logo">
     {#each logo as line, i (i)}
-      <pre class="row" class:tuck-below={i === 0} class:tuck-above={i === ROWS - 1}>{line}</pre>
+      <pre
+        class="row"
+        class:tuck-below={i === 0}
+        class:tuck-above={i === ROWS - 1}><span class="side-l">{line.left}</span>{line.mid}<span
+          class="side-r">{line.right}</span></pre>
     {/each}
   </div>
 
@@ -233,10 +242,20 @@
   /* Character cells are ~2x taller than wide, so the ring rows are pulled
      toward the box to even out the visual gap. */
   .tuck-below {
-    margin-bottom: -0.4em;
+    margin-bottom: -0.55em;
   }
   .tuck-above {
-    margin-top: -0.4em;
+    margin-top: -0.55em;
+  }
+  /* Ring strokes sit centered in their cells; nudge the side columns
+     inward so the horizontal gap tightens to match. */
+  .side-l {
+    position: relative;
+    left: 0.4ch;
+  }
+  .side-r {
+    position: relative;
+    left: -0.4ch;
   }
   .line {
     max-width: 34rem;
