@@ -17,7 +17,7 @@
   const STAGES = ["█", "▓", "━", "═", "─"];
   const LAST = STAGES.length - 1;
   /** Front-steps a char lingers on each weight before thinning further. */
-  const DWELL = 5;
+  const DWELL = 2;
   const N = 500;
   const DONE = N + 2 + DWELL * LAST;
   // Intro is a mount-time decision by design.
