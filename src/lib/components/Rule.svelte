@@ -16,14 +16,17 @@
 
   const STAGES = ["█", "▓", "━", "═", "─"];
   const LAST = STAGES.length - 1;
+  /** Front-steps a char lingers on each weight before thinning further. */
+  const DWELL = 5;
   const N = 500;
-  const DONE = N + 2 + LAST;
+  const DONE = N + 2 + DWELL * LAST;
   // Intro is a mount-time decision by design.
   let k = $state(untrack(() => (intro ? 0 : DONE)));
   let fillEl = $state<HTMLElement | undefined>(undefined);
 
   /** Glyph for the char at line-index i: thins as the front (k) passes it. */
-  const glyph = (i: number) => STAGES[Math.max(0, Math.min(LAST, k - i))];
+  const glyph = (i: number) =>
+    STAGES[Math.max(0, Math.min(LAST, Math.floor((k - i) / DWELL)))];
 
   const cap = $derived(glyph(0) + glyph(1));
   // The far-right cap converts when the sweep completes.
@@ -48,9 +51,9 @@
       const el = fillEl;
       const chPx = el ? el.scrollWidth / N : 8;
       const visible = el ? Math.ceil(el.clientWidth / chPx) : 120;
-      const target = Math.min(DONE, visible + 2 + LAST + 4);
+      const target = Math.min(DONE, visible + 2 + DWELL * LAST + 4);
       sweep = setInterval(() => {
-        k += 2;
+        k += 1;
         if (k >= target) {
           k = DONE;
           clearInterval(sweep);
