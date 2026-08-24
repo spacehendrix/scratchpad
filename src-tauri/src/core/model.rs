@@ -55,6 +55,16 @@ pub struct Settings {
     /// Root font size in px — the rem base the whole UI scales from.
     #[serde(default = "default_font_size")]
     pub font_size: u32,
+    /// Enabled dashboard panels, in display order ("activity", "tasks",
+    /// "storage"); empty hides the dashboard.
+    #[serde(default = "default_dashboard_panels")]
+    pub dashboard_panels: Vec<String>,
+    /// Dashboard glyph style id ("blocks", "braille", "shade").
+    #[serde(default = "default_dashboard_style")]
+    pub dashboard_style: String,
+    /// Dashboard size id ("small", "medium", "large").
+    #[serde(default = "default_dashboard_size")]
+    pub dashboard_size: String,
 }
 
 fn default_font() -> String {
@@ -65,12 +75,27 @@ fn default_font_size() -> u32 {
     16
 }
 
+fn default_dashboard_panels() -> Vec<String> {
+    vec!["activity".into(), "tasks".into(), "storage".into()]
+}
+
+fn default_dashboard_style() -> String {
+    "blocks".into()
+}
+
+fn default_dashboard_size() -> String {
+    "medium".into()
+}
+
 impl Default for Settings {
     fn default() -> Self {
         Settings {
             theme: "tokyo-night".into(),
             font: default_font(),
             font_size: default_font_size(),
+            dashboard_panels: default_dashboard_panels(),
+            dashboard_style: default_dashboard_style(),
+            dashboard_size: default_dashboard_size(),
         }
     }
 }

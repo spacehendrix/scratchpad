@@ -5,24 +5,37 @@
   import { themes } from "../themes";
   import { applyTheme } from "../themes";
   import { applyFont, applyFontSize, fonts, MAX_SIZE, MIN_SIZE } from "../fonts";
+  import { PANELS, SIZES, STYLES, styleById } from "../dashboard";
   import { dispatch, type Keymap } from "../keyboard";
 
   type Row =
     | { kind: "theme"; id: string; label: string }
     | { kind: "font"; id: string; label: string }
-    | { kind: "size" };
+    | { kind: "size" }
+    | { kind: "dpanel"; id: string; label: string }
+    | { kind: "dstyle"; id: string; label: string }
+    | { kind: "dsize"; id: string; label: string };
 
   const rows: Row[] = [
     ...themes.map((t) => ({ kind: "theme", id: t.id, label: t.label }) as Row),
     ...fonts.map((f) => ({ kind: "font", id: f.id, label: f.label }) as Row),
     { kind: "size" },
+    ...PANELS.map((p) => ({ kind: "dpanel", id: p.id, label: p.label }) as Row),
+    ...STYLES.map((s) => ({ kind: "dstyle", id: s.id, label: s.label }) as Row),
+    ...SIZES.map((s) => ({ kind: "dsize", id: s.id, label: s.label }) as Row),
   ];
   const firstFontRow = themes.length;
-  const sizeRow = rows.length - 1;
+  const sizeRow = firstFontRow + fonts.length;
+  const firstDashRow = sizeRow + 1;
+  const firstDStyleRow = firstDashRow + PANELS.length;
+  const firstDSizeRow = firstDStyleRow + STYLES.length;
 
   let draftTheme = $state(untrack(() => settings.theme));
   let draftFont = $state(untrack(() => settings.font));
   let draftSize = $state(untrack(() => settings.fontSize));
+  let draftPanels = $state<string[]>(untrack(() => [...settings.dashboardPanels]));
+  let draftDashStyle = $state(untrack(() => settings.dashboardStyle));
+  let draftDashSize = $state(untrack(() => settings.dashboardSize));
   let selectedIndex = $state(
     untrack(() => Math.max(0, themes.findIndex((t) => t.id === settings.theme))),
   );
@@ -36,7 +49,7 @@
     );
   }
 
-  /** Space (or click): adopt the selected row's value and preview it. */
+  /** Space (or click): adopt/toggle the selected row's value. */
   function choose() {
     const row = rows[selectedIndex];
     if (row.kind === "theme") {
@@ -45,6 +58,16 @@
     } else if (row.kind === "font") {
       draftFont = row.id;
       applyFont(row.id);
+    } else if (row.kind === "dpanel") {
+      // Toggle, preserving canonical panel order.
+      const next = new Set(draftPanels);
+      if (next.has(row.id)) next.delete(row.id);
+      else next.add(row.id);
+      draftPanels = PANELS.map((p) => p.id).filter((id) => next.has(id));
+    } else if (row.kind === "dstyle") {
+      draftDashStyle = row.id;
+    } else if (row.kind === "dsize") {
+      draftDashSize = row.id;
     }
   }
 
@@ -55,7 +78,14 @@
   }
 
   async function commit() {
-    await settings.commit({ theme: draftTheme, font: draftFont, fontSize: draftSize });
+    await settings.commit({
+      theme: draftTheme,
+      font: draftFont,
+      fontSize: draftSize,
+      dashboardPanels: draftPanels,
+      dashboardStyle: draftDashStyle,
+      dashboardSize: draftDashSize,
+    });
     session.view = "browse";
   }
 
@@ -92,6 +122,12 @@
         <p class="section">┄┄ font ┄┄</p>
       {:else if i === sizeRow}
         <p class="section">┄┄ size ┄┄</p>
+      {:else if i === firstDashRow}
+        <p class="section">┄┄ dashboard · panels ┄┄</p>
+      {:else if i === firstDStyleRow}
+        <p class="section">┄┄ dashboard · style ┄┄</p>
+      {:else if i === firstDSizeRow}
+        <p class="section">┄┄ dashboard · size ┄┄</p>
       {/if}
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <div
@@ -123,9 +159,23 @@
           <span class="sample" style:font-family={fonts.find((f) => f.id === row.id)?.stack}
             >abc [x] 123</span
           >
-        {:else}
+        {:else if row.kind === "size"}
           <span class="name">◂ {draftSize} px ▸</span>
           <span class="sample">[h/l] adjust</span>
+        {:else if row.kind === "dpanel"}
+          <span class="name">{row.label}</span>
+          <span class="sample">{draftPanels.includes(row.id) ? "[x] on" : "[ ] off"}</span>
+        {:else if row.kind === "dstyle"}
+          <span class="name">{row.label}</span>
+          {#if row.id === draftDashStyle}<span class="current">●</span>{/if}
+          <span class="sample graph"
+            >{styleById(row.id).levels.join("")} {styleById(row.id).gauge[0].repeat(3)}{styleById(
+              row.id,
+            ).gauge[1].repeat(3)}</span
+          >
+        {:else if row.kind === "dsize"}
+          <span class="name">{row.label}</span>
+          {#if row.id === draftDashSize}<span class="current">●</span>{/if}
         {/if}
       </div>
     {/each}
@@ -175,5 +225,8 @@
   }
   .sample {
     color: var(--fg-dim);
+  }
+  .sample.graph {
+    color: var(--accent);
   }
 </style>

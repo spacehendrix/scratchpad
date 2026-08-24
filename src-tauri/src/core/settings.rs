@@ -43,6 +43,9 @@ mod tests {
             theme: "gruvbox".into(),
             font: "menlo".into(),
             font_size: 14,
+            dashboard_panels: vec!["storage".into()],
+            dashboard_style: "braille".into(),
+            dashboard_size: "large".into(),
         };
         save(dir.path(), &custom).unwrap();
         let loaded = load(dir.path());
@@ -61,6 +64,9 @@ mod tests {
         assert_eq!(loaded.theme, "nord");
         assert_eq!(loaded.font, "sf-mono");
         assert_eq!(loaded.font_size, 16);
+        assert_eq!(loaded.dashboard_panels, vec!["activity", "tasks", "storage"]);
+        assert_eq!(loaded.dashboard_style, "blocks");
+        assert_eq!(loaded.dashboard_size, "medium");
     }
 
     #[test]

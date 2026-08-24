@@ -195,7 +195,20 @@ font?: string;
 /**
  * Root font size in px — the rem base the whole UI scales from.
  */
-fontSize?: number }
+fontSize?: number; 
+/**
+ * Enabled dashboard panels, in display order ("activity", "tasks",
+ * "storage"); empty hides the dashboard.
+ */
+dashboardPanels?: string[]; 
+/**
+ * Dashboard glyph style id ("blocks", "braille", "shade").
+ */
+dashboardStyle?: string; 
+/**
+ * Dashboard size id ("small", "medium", "large").
+ */
+dashboardSize?: string }
 export type StorageStats = { dbBytes: number; limitBytes: number; docCount: number; archivedCount: number; pinnedCount: number; 
 /**
  * True when over the limit but only pinned documents remain — saves are
