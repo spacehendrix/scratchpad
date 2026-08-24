@@ -100,7 +100,7 @@
   .dash {
     display: flex;
     gap: 3ch;
-    margin: 0.3rem 0 0.9rem;
+    margin: 0.3rem 0 1.8rem;
   }
   .panel {
     flex: 1;
