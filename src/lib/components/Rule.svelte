@@ -3,9 +3,10 @@
   // run of box-drawing glyphs clipped by flexbox — always pixel-aligned with
   // the monospace grid, no measuring needed.
   //
-  // With `intro`, the line mounts as a heavy bar and, after 1s, thins out in
-  // a left-to-right sweep: each char steps through STAGES as the front
-  // passes, so the line tapers from large to thin instead of flipping.
+  // With `intro`, the whole line dissolves rather than sweeping: it mounts
+  // as a heavy bar, then churns through ascii noise while characters freeze
+  // — first to "═" (every char reaches it before any moves on), then to "─"
+  // — and settles on "─".
   import { untrack } from "svelte";
 
   let {
@@ -14,52 +15,57 @@
     intro = false,
   }: { label?: string; right?: string; intro?: boolean } = $props();
 
-  const STAGES = ["█", "▓", "━", "═", "─"];
-  const LAST = STAGES.length - 1;
   const N = 500;
-  const DONE = N + 2 + LAST;
-  // Intro is a mount-time decision by design.
-  let k = $state(untrack(() => (intro ? 0 : DONE)));
-  let fillEl = $state<HTMLElement | undefined>(undefined);
+  const NOISE = "█▓▒░#*+~×≡";
+  const T = 32; // dissolve frames (~1.4s at 45ms)
 
-  /** Glyph for the char at line-index i: thins as the front (k) passes it. */
-  const glyph = (i: number) => STAGES[Math.max(0, Math.min(LAST, k - i))];
+  let cap = $state(untrack(() => (intro ? "██" : "──")));
+  let fill = $state(untrack(() => (intro ? "█".repeat(N) : "─".repeat(N))));
+  let endCap = $state(untrack(() => (intro ? "██" : "──")));
 
-  const cap = $derived(glyph(0) + glyph(1));
-  // The far-right cap converts when the sweep completes.
-  const endCap = $derived(k >= DONE ? "──" : STAGES[0].repeat(2));
-  const fill = $derived.by(() => {
-    if (k >= DONE) return "─".repeat(N);
-    let s = "";
-    for (let j = 0; j < N; j++) s += glyph(2 + j);
-    return s;
-  });
+  function settle() {
+    cap = "──";
+    fill = "─".repeat(N);
+    endCap = "──";
+  }
 
   $effect(() => {
     if (!intro) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      k = DONE;
+      settle();
       return;
     }
-    let sweep: ReturnType<typeof setInterval> | undefined;
+    let timer: ReturnType<typeof setInterval> | undefined;
     const start = setTimeout(() => {
-      // Only the visible width needs sweeping: content is N chars wide, so
-      // scrollWidth / N gives the char width without extra measurement.
-      const el = fillEl;
-      const chPx = el ? el.scrollWidth / N : 8;
-      const visible = el ? Math.ceil(el.clientWidth / chPx) : 120;
-      const target = Math.min(DONE, visible + 2 + LAST + 4);
-      sweep = setInterval(() => {
-        k += 2;
-        if (k >= target) {
-          k = DONE;
-          clearInterval(sweep);
+      // Per-char random freeze times: everything reaches "═" (thresholds up
+      // to 0.6) before anything flips to "─" (from 0.72), so the line
+      // visibly ends as all "═", then dissolves once more into "─".
+      const toEquals = Array.from({ length: N + 4 }, () => 0.1 + Math.random() * 0.5);
+      const toDash = Array.from({ length: N + 4 }, () => 0.72 + Math.random() * 0.23);
+      let f = 0;
+      timer = setInterval(() => {
+        f++;
+        const t = f / T;
+        const charAt = (i: number) =>
+          t >= toDash[i]
+            ? "─"
+            : t >= toEquals[i]
+              ? "═"
+              : NOISE[Math.floor(Math.random() * NOISE.length)];
+        cap = charAt(0) + charAt(1);
+        let s = "";
+        for (let j = 0; j < N; j++) s += charAt(2 + j);
+        fill = s;
+        endCap = charAt(N + 2) + charAt(N + 3);
+        if (f >= T) {
+          clearInterval(timer);
+          settle();
         }
-      }, 12);
+      }, 45);
     }, 1000);
     return () => {
       clearTimeout(start);
-      clearInterval(sweep);
+      clearInterval(timer);
     };
   });
 </script>
@@ -67,7 +73,7 @@
 <div class="rule">
   <span class="cap">{cap}</span>
   {#if label}<span class="label">{label}</span>{/if}
-  <span class="fill" aria-hidden="true" bind:this={fillEl}>{fill}</span>
+  <span class="fill" aria-hidden="true">{fill}</span>
   {#if right}
     <span class="right">{right}</span>
     <span class="cap">{endCap}</span>
