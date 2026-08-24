@@ -60,14 +60,14 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 1.75rem;
+    height: var(--titlebar-pad, 1.75rem);
     z-index: 10;
   }
   .app {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    padding: 1.75rem 1.25rem 0.6rem;
+    padding: var(--titlebar-pad, 1.75rem) 1.25rem 0.6rem;
     gap: 0.4rem;
   }
   .content {

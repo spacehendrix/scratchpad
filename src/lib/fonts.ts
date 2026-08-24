@@ -26,8 +26,16 @@ export function applyFont(id: string) {
   document.documentElement.style.fontFamily = font.stack;
 }
 
+/** Height of the native overlay titlebar (traffic lights) in device px. */
+const TITLEBAR_PX = 28;
+
 /** Root font size in px — the rem base, so the whole UI scales with it. */
 export function applyFontSize(px: number) {
   const clamped = Math.max(MIN_SIZE, Math.min(MAX_SIZE, px));
-  document.documentElement.style.fontSize = `${clamped}px`;
+  const root = document.documentElement;
+  root.style.fontSize = `${clamped}px`;
+  // The traffic lights are a fixed-pixel overlay, so the top clearance is
+  // recomputed in rem against the new base: smaller font → larger rem value,
+  // constant on-screen height (and vice versa).
+  root.style.setProperty("--titlebar-pad", `${(TITLEBAR_PX / clamped).toFixed(4)}rem`);
 }
