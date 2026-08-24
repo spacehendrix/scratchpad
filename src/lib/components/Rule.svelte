@@ -3,8 +3,9 @@
   // run of box-drawing glyphs clipped by flexbox — always pixel-aligned with
   // the monospace grid, no measuring needed.
   //
-  // With `intro`, the line mounts drawn in "═" and, after 1s, converts to
-  // "─" in a left-to-right sweep (cap first, then the fill).
+  // With `intro`, the line mounts as a heavy bar and, after 1s, thins out in
+  // a left-to-right sweep: each char steps through STAGES as the front
+  // passes, so the line tapers from large to thin instead of flipping.
   import { untrack } from "svelte";
 
   let {
@@ -13,18 +14,25 @@
     intro = false,
   }: { label?: string; right?: string; intro?: boolean } = $props();
 
+  const STAGES = ["█", "▓", "━", "═", "─"];
+  const LAST = STAGES.length - 1;
   const N = 500;
-  const DONE = N + 2;
+  const DONE = N + 2 + LAST;
   // Intro is a mount-time decision by design.
   let k = $state(untrack(() => (intro ? 0 : DONE)));
   let fillEl = $state<HTMLElement | undefined>(undefined);
 
-  const cap = $derived(k >= 2 ? "──" : k === 1 ? "─═" : "══");
+  /** Glyph for the char at line-index i: thins as the front (k) passes it. */
+  const glyph = (i: number) => STAGES[Math.max(0, Math.min(LAST, k - i))];
+
+  const cap = $derived(glyph(0) + glyph(1));
   // The far-right cap converts when the sweep completes.
-  const endCap = $derived(k >= DONE ? "──" : "══");
+  const endCap = $derived(k >= DONE ? "──" : STAGES[0].repeat(2));
   const fill = $derived.by(() => {
-    const converted = Math.max(0, Math.min(N, k - 2));
-    return "─".repeat(converted) + "═".repeat(N - converted);
+    if (k >= DONE) return "─".repeat(N);
+    let s = "";
+    for (let j = 0; j < N; j++) s += glyph(2 + j);
+    return s;
   });
 
   $effect(() => {
@@ -40,9 +48,9 @@
       const el = fillEl;
       const chPx = el ? el.scrollWidth / N : 8;
       const visible = el ? Math.ceil(el.clientWidth / chPx) : 120;
-      const target = Math.min(DONE, visible + 6);
+      const target = Math.min(DONE, visible + 2 + LAST + 4);
       sweep = setInterval(() => {
-        k += 3;
+        k += 2;
         if (k >= target) {
           k = DONE;
           clearInterval(sweep);
