@@ -5,6 +5,7 @@
   import { dispatch, type Keymap } from "../keyboard";
   import DocRow from "./DocRow.svelte";
   import Cursor from "./Cursor.svelte";
+  import Dashboard from "./Dashboard.svelte";
 
   let selectedIndex = $state(0);
   let now = $state(Date.now());
@@ -79,6 +80,7 @@
 <svelte:window {onkeydown} />
 
 <div class="browse">
+  <Dashboard />
   {#if documents.catalog.length === 0}
     <p class="empty">nothing here · [n] new <Cursor /></p>
   {:else}
