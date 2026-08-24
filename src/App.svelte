@@ -8,6 +8,12 @@
   import StatusBar from "./lib/components/StatusBar.svelte";
   import { session } from "./lib/stores/session.svelte";
   import { dispatch } from "./lib/keyboard";
+  import { getVersion } from "@tauri-apps/api/app";
+
+  let version = $state("");
+  $effect(() => {
+    getVersion().then((v) => (version = v));
+  });
 
   function onkeydown(e: KeyboardEvent) {
     if (session.locked) return;
@@ -31,7 +37,7 @@
   <Unlock onunlocked={() => (session.locked = false)} />
 {:else}
   <div class="app">
-    <Rule label={LABELS[session.view] ?? "scratchpad"} intro />
+    <Rule label={LABELS[session.view] ?? "scratchpad"} right={version} intro />
     <main class="content">
       {#if session.view === "editor"}
         <Editor />

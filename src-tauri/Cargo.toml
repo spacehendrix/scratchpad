@@ -1,6 +1,6 @@
 [package]
 name = "scratchpad"
-version = "0.1.0"
+version = "1.0.0"
 description = "Terminal-style ephemeral notes and checklists"
 authors = ["Victor Buzzegoli"]
 edition = "2021"

@@ -7,7 +7,11 @@
   // "─" in a left-to-right sweep (cap first, then the fill).
   import { untrack } from "svelte";
 
-  let { label = "", intro = false }: { label?: string; intro?: boolean } = $props();
+  let {
+    label = "",
+    right = "",
+    intro = false,
+  }: { label?: string; right?: string; intro?: boolean } = $props();
 
   const N = 500;
   const DONE = N + 2;
@@ -16,6 +20,8 @@
   let fillEl = $state<HTMLElement | undefined>(undefined);
 
   const cap = $derived(k >= 2 ? "──" : k === 1 ? "─═" : "══");
+  // The far-right cap converts when the sweep completes.
+  const endCap = $derived(k >= DONE ? "──" : "══");
   const fill = $derived.by(() => {
     const converted = Math.max(0, Math.min(N, k - 2));
     return "─".repeat(converted) + "═".repeat(N - converted);
@@ -54,6 +60,10 @@
   <span class="cap">{cap}</span>
   {#if label}<span class="label">{label}</span>{/if}
   <span class="fill" aria-hidden="true" bind:this={fillEl}>{fill}</span>
+  {#if right}
+    <span class="right">{right}</span>
+    <span class="cap">{endCap}</span>
+  {/if}
 </div>
 
 <style>
@@ -71,5 +81,8 @@
   .fill {
     flex: 1;
     overflow: hidden;
+  }
+  .right {
+    color: var(--fg-dim);
   }
 </style>
