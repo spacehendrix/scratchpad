@@ -36,14 +36,31 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let loaded = load(dir.path());
         assert_eq!(loaded.theme, "tokyo-night");
+        assert_eq!(loaded.font, "sf-mono");
+        assert_eq!(loaded.font_size, 16);
 
         let custom = Settings {
             theme: "gruvbox".into(),
+            font: "menlo".into(),
+            font_size: 14,
         };
         save(dir.path(), &custom).unwrap();
-        assert_eq!(load(dir.path()).theme, "gruvbox");
+        let loaded = load(dir.path());
+        assert_eq!(loaded.theme, "gruvbox");
+        assert_eq!(loaded.font, "menlo");
+        assert_eq!(loaded.font_size, 14);
         // No stray temp file left behind.
         assert!(!dir.path().join("settings.json.tmp").exists());
+    }
+
+    #[test]
+    fn legacy_theme_only_file_gets_font_defaults() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("settings.json"), br#"{"theme":"nord"}"#).unwrap();
+        let loaded = load(dir.path());
+        assert_eq!(loaded.theme, "nord");
+        assert_eq!(loaded.font, "sf-mono");
+        assert_eq!(loaded.font_size, 16);
     }
 
     #[test]

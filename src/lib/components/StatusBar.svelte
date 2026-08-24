@@ -28,7 +28,7 @@
     browse: "[n] new · [⏎] open · [j/k] · [p] pin · [d] del · [/] search · [,] theme · [⌘l] lock",
     editor: "[esc] back · [⌘⏎] toggle",
     search: "[⇥] scope · [↑↓] move · [⏎] open · [esc] back",
-    settings: "[j/k] preview · [⏎] apply · [esc] cancel",
+    settings: "[j/k] move · [h/l] size · [⏎] apply · [esc] cancel",
   };
 </script>
 

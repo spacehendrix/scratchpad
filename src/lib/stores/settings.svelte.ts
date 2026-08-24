@@ -1,33 +1,42 @@
-// Theme/settings state. Loaded before unlock so the unlock screen is themed.
-import { getSettings, setSettings } from "../api";
+// Theme/font settings state. Loaded before unlock so the unlock screen is
+// already themed and sized.
+import { getSettings, setSettings, type Settings } from "../api";
 import { applyTheme, defaultTheme } from "../themes";
+import { applyFont, applyFontSize, defaultFont, defaultFontSize } from "../fonts";
 
 class SettingsStore {
   theme = $state(defaultTheme);
+  font = $state(defaultFont);
+  fontSize = $state(defaultFontSize);
 
   async load() {
     try {
       const s = await getSettings();
       this.theme = s.theme;
+      this.font = s.font ?? defaultFont;
+      this.fontSize = s.fontSize ?? defaultFontSize;
     } catch {
-      this.theme = defaultTheme;
+      // Defaults stand.
     }
-    applyTheme(this.theme);
+    this.applyAll();
   }
 
-  /** Apply without persisting (live preview in the picker). */
-  preview(id: string) {
-    applyTheme(id);
+  applyAll() {
+    applyTheme(this.theme);
+    applyFont(this.font);
+    applyFontSize(this.fontSize);
   }
 
   /** Apply and persist. */
-  async commit(id: string) {
-    this.theme = id;
-    applyTheme(id);
+  async commit(next: Required<Settings>) {
+    this.theme = next.theme;
+    this.font = next.font;
+    this.fontSize = next.fontSize;
+    this.applyAll();
     try {
-      await setSettings({ theme: id });
+      await setSettings(next);
     } catch {
-      // Persisting is best-effort; the theme still applies for this run.
+      // Persisting is best-effort; the settings still apply for this run.
     }
   }
 }

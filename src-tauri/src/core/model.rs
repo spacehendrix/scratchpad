@@ -48,12 +48,29 @@ pub struct DocMeta {
 #[serde(rename_all = "camelCase")]
 pub struct Settings {
     pub theme: String,
+    /// Font id from the frontend registry (serde defaults keep settings.json
+    /// files written before these fields existed loading cleanly).
+    #[serde(default = "default_font")]
+    pub font: String,
+    /// Root font size in px — the rem base the whole UI scales from.
+    #[serde(default = "default_font_size")]
+    pub font_size: u32,
+}
+
+fn default_font() -> String {
+    "sf-mono".into()
+}
+
+fn default_font_size() -> u32 {
+    16
 }
 
 impl Default for Settings {
     fn default() -> Self {
         Settings {
             theme: "tokyo-night".into(),
+            font: default_font(),
+            font_size: default_font_size(),
         }
     }
 }

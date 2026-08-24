@@ -186,7 +186,16 @@ snippet: string;
  * True when the match came from the body rather than title/preview.
  */
 inBody: boolean }
-export type Settings = { theme: string }
+export type Settings = { theme: string; 
+/**
+ * Font id from the frontend registry (serde defaults keep settings.json
+ * files written before these fields existed loading cleanly).
+ */
+font?: string; 
+/**
+ * Root font size in px — the rem base the whole UI scales from.
+ */
+fontSize?: number }
 export type StorageStats = { dbBytes: number; limitBytes: number; docCount: number; archivedCount: number; pinnedCount: number; 
 /**
  * True when over the limit but only pinned documents remain — saves are
