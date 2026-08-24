@@ -6,7 +6,10 @@
   import { documents } from "../stores/documents.svelte";
   import { storageStats, type StorageStats } from "../api";
   import { fmtBytes } from "../format";
-  import Rule from "./Rule.svelte";
+
+  // Dashed rule, deliberately distinct from the app header/footer's solid
+  // "─" chrome.
+  const DASH_FILL = "┄".repeat(300);
 
   let stats = $state<StorageStats | null>(null);
 
@@ -59,13 +62,21 @@
 
 <div class="dash">
   <div class="panel">
-    <Rule label="activity" />
+    <div class="phead">
+      <span>┄┄</span><span class="plabel">activity</span><span class="pfill" aria-hidden="true"
+        >{DASH_FILL}</span
+      >
+    </div>
     <pre class="art"><span class="graph">{activity.spark}</span> <span class="dim"
         >{activity.total} · 14d</span
       ></pre>
   </div>
   <div class="panel">
-    <Rule label="tasks" />
+    <div class="phead">
+      <span>┄┄</span><span class="plabel">tasks</span><span class="pfill" aria-hidden="true"
+        >{DASH_FILL}</span
+      >
+    </div>
     <pre class="art"><span class="graph">{taskBar.filled}</span><span class="dim"
         >{taskBar.empty}</span
       > <span class="dim"
@@ -73,7 +84,11 @@
       ></pre>
   </div>
   <div class="panel">
-    <Rule label="storage" />
+    <div class="phead">
+      <span>┄┄</span><span class="plabel">storage</span><span class="pfill" aria-hidden="true"
+        >{DASH_FILL}</span
+      >
+    </div>
     <pre class="art"><span class="graph">{storageBar.filled}</span><span class="dim"
         >{storageBar.empty}</span
       > <span class="dim">{stats ? fmtBytes(Number(stats.dbBytes)) : "…"}</span
@@ -90,6 +105,22 @@
   .panel {
     flex: 1;
     min-width: 0;
+    overflow: hidden;
+  }
+  .phead {
+    display: flex;
+    align-items: baseline;
+    gap: 1ch;
+    color: var(--fg-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    opacity: 0.75;
+  }
+  .plabel {
+    color: var(--fg-dim);
+  }
+  .pfill {
+    flex: 1;
     overflow: hidden;
   }
   .art {
