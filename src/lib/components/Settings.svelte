@@ -28,9 +28,16 @@
   );
   let listEl = $state<HTMLElement | undefined>(undefined);
 
-  // Landing on a row previews its value, like the theme picker always did.
+  // Moving only moves — nothing is previewed or changed until chosen.
   function move(delta: number) {
     selectedIndex = Math.min(Math.max(selectedIndex + delta, 0), rows.length - 1);
+    tick().then(() =>
+      listEl?.querySelector(".selected")?.scrollIntoView({ block: "nearest" }),
+    );
+  }
+
+  /** Space (or click): adopt the selected row's value and preview it. */
+  function choose() {
     const row = rows[selectedIndex];
     if (row.kind === "theme") {
       draftTheme = row.id;
@@ -39,9 +46,6 @@
       draftFont = row.id;
       applyFont(row.id);
     }
-    tick().then(() =>
-      listEl?.querySelector(".selected")?.scrollIntoView({ block: "nearest" }),
-    );
   }
 
   function adjustSize(delta: number) {
@@ -69,7 +73,11 @@
     l: () => adjustSize(1),
     arrowleft: () => adjustSize(-1),
     arrowright: () => adjustSize(1),
-    enter: () => commit(),
+    " ": () => choose(),
+    enter: () => {
+      choose();
+      commit();
+    },
     "!escape": () => cancel(),
   };
 </script>
@@ -91,7 +99,7 @@
         class:selected={i === selectedIndex}
         onclick={() => {
           selectedIndex = i;
-          move(0);
+          choose();
         }}
         ondblclick={commit}
         role="button"
@@ -100,7 +108,7 @@
         <span class="marker">{i === selectedIndex ? "❯" : " "}</span>
         {#if row.kind === "theme"}
           <span class="name">{row.label}</span>
-          {#if row.id === settings.theme}<span class="current">●</span>{/if}
+          {#if row.id === draftTheme}<span class="current">●</span>{/if}
           <span class="swatch">
             <span style:color="var(--accent)">■</span><span style:color="var(--accent2)">■</span
             ><span style:color="var(--ok)">■</span><span style:color="var(--warn)">■</span><span
@@ -111,13 +119,12 @@
           <span class="name" style:font-family={fonts.find((f) => f.id === row.id)?.stack}
             >{row.label}</span
           >
-          {#if row.id === settings.font}<span class="current">●</span>{/if}
+          {#if row.id === draftFont}<span class="current">●</span>{/if}
           <span class="sample" style:font-family={fonts.find((f) => f.id === row.id)?.stack}
             >abc [x] 123</span
           >
         {:else}
           <span class="name">◂ {draftSize} px ▸</span>
-          {#if draftSize === settings.fontSize}<span class="current">●</span>{/if}
           <span class="sample">[h/l] adjust</span>
         {/if}
       </div>
