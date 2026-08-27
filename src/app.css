@@ -40,6 +40,10 @@ body {
   color: var(--fg);
 }
 
+/* Text selection is derived from the accent, not --sel-bg: several themes
+   keep --sel-bg (list-row selection) close to the background, which made
+   highlighted text nearly invisible. A translucent accent contrasts with
+   the background in every theme while keeping glyphs readable through it. */
 ::selection {
-  background: var(--sel-bg);
+  background: color-mix(in srgb, var(--accent) 40%, transparent);
 }
