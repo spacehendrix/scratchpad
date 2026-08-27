@@ -1,4 +1,4 @@
-# Scratchpad `[sp]`
+# <img src="src-tauri/icons/128x128.png" alt="Scratchpad icon" width="32" /> Scratchpad
 
 A terminal-style, keyboard-driven notes and checklist app for macOS — built for
 thoughts that are meant to be **temporary**. Offload a checklist from your
