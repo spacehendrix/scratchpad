@@ -216,18 +216,11 @@
     position: relative;
     color: var(--fg);
     margin-bottom: 1rem;
-    /* Pinned to faces that ship box-drawing glyphs: the frame and label
-       must render from ONE font, or their column widths drift apart
-       (pre defaults to the UA monospace, and user-selected fonts may
-       lack box glyphs entirely, pulling them from a wider fallback). */
-    font-family: "SF Mono", "Menlo", monospace;
   }
   /* Box-drawing glyphs only connect vertically at line-height 1. */
   .frame {
     margin: 0;
     line-height: 1;
-    font-family: inherit;
-    font-size: inherit;
   }
   .label {
     position: absolute;
@@ -236,8 +229,6 @@
     transform: translate(-50%, -50%);
     margin: 0;
     line-height: 1;
-    font-family: inherit;
-    font-size: inherit;
   }
   .line {
     max-width: 34rem;

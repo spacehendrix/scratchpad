@@ -6,9 +6,9 @@ head, draft something rough, and let it fade away on its own. Encrypted at
 rest, local-only, no backend, no telemetry.
 
 ```
-┌─────────────────────────┐
+┌───────────────────────┐
 │  s c r a t c h p a d  │
-└─────────────────────────┘
+└───────────────────────┘
 ```
 
 ## The concept

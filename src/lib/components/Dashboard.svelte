@@ -139,9 +139,6 @@
   .art {
     margin: 0.35rem 0 0;
     white-space: nowrap;
-    /* pre would otherwise fall back to the UA monospace, not the app font */
-    font-family: inherit;
-    font-size: inherit;
   }
   .graph {
     color: var(--accent);
